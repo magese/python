@@ -1,8 +1,5 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.edge.options import Options
-from selenium.webdriver.common.keys import Keys
 import time
 import openpyxl
 
@@ -45,11 +42,11 @@ def read_excel(sheet):
 
 
 # 截图
-def screenshot(edge, row, dir):
+def screenshot(edge, row, save_dir):
     edge.get(row.link)
     time.sleep(3)
     filename = row.name + '.jpg'
-    jpg_path = dir + filename
+    jpg_path = save_dir + filename
     edge.get_screenshot_as_file(jpg_path)
     print('save jpg success', jpg_path)
 
