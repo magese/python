@@ -20,7 +20,7 @@ class Item:
         self.link = _link
 
     def to_string(self):
-        return 'row=%s, id=%s, link=%s' % (self.row, self.id, self.link)
+        return 'row=%s, id=%s' % (self.row, self.id)
 
 
 # 等待查找元素
@@ -60,7 +60,7 @@ def login(username, password, edge):
             lambda d: d.find_element(by=By.CLASS_NAME, value="css-wp7z9d"), edge)
         login_btn.click()
     else:
-        print('当前已登录')
+        print(current_time_str(), '当前已登录')
 
 
 # 切换页面
@@ -92,7 +92,7 @@ def switch_page(edge):
 def read_excel(sheet):
     max_row = sheet.max_row
     max_column = sheet.max_column
-    print('最大行数：', max_row, '，最大列数：', max_column)
+    print(current_time_str(), '最大行数：', max_row, '，最大列数：', max_column)
 
     items = []
     for j in range(1, max_row + 1):
@@ -151,18 +151,23 @@ def change_link(info, edge):
     finish_btn.click()
 
 
+# 当前时间
+def current_time_str():
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) + ':'
+
+
 # main
 driver = open_browser()
-print('打开Edge成功')
+print(current_time_str(), '打开Edge成功')
 driver.get("https://ad.xiaohongshu.com/")
 time.sleep(2)
 
-login('', '', driver)
-print('登录账号成功')
+login('print(current_time_str(),', '', driver)
+print(current_time_str(), '登录账号成功')
 time.sleep(2)
 
 switch_page(driver)
-print('切换页面成功')
+print(current_time_str(), '切换页面成功')
 time.sleep(2)
 
 filepath = 'C:\\Users\\mages\\Desktop\\创意id+监测链接.xlsx'
@@ -170,31 +175,34 @@ xlsx = openpyxl.load_workbook(filepath)
 active = xlsx.active
 lines = read_excel(active)
 size = len(lines)
-print('读取文件成功，共读取数据', size, "条")
+print(current_time_str(), '读取文件成功，共读取数据', size, "条")
 
+T1 = time.perf_counter()
 for i in range(0, size):
     line = lines[i]
     try:
         change_link(line, driver)
-        print(i + 1, '/', size, '-', format((i + 1) / size * 100, '.2f'), '% => ', line.to_string())
+        print(current_time_str(), i + 1, '/', size, '-', format((i + 1) / size * 100, '.2f') + '%',
+              'cost:', format((time.perf_counter() - T1), '.2f'), 's => ', line.to_string())
         time.sleep(0.5)
+        T1 = time.perf_counter()
     except BaseException as e:
         value = 'failure:' + str(e)
-        print('换链接异常：', value, line.to_string())
+        print(current_time_str(), '换链接异常：', value, line.to_string())
         active.cell(row=line.row, column=3, value=value)
         driver.quit()
         driver = open_browser()
-        print('重新打开Edge成功')
+        print(current_time_str(), '重新打开Edge成功')
         driver.get("https://ad.xiaohongshu.com/")
         time.sleep(2)
-        login('skiicn_lrb2021@163.com', 'Mediacom12345', driver)
-        print('重新登录账号成功')
+        login('print(current_time_str(),', '', driver)
+        print(current_time_str(), '重新登录账号成功')
         time.sleep(2)
         switch_page(driver)
-        print('重新切换页面成功')
+        print(current_time_str(), '重新切换页面成功')
         time.sleep(2)
     else:
         active.cell(row=line.row, column=3, value='success')
     finally:
         xlsx.save(filepath)
-print('finish')
+print(current_time_str(), 'finish')
