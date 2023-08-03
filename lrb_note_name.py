@@ -11,16 +11,16 @@ import openpyxl
 class Item:
     row = 0
     id = ''
-    link = ''
+    name = ''
     log = ''
 
-    def __init__(self, _row, _id, _link):
+    def __init__(self, _row, _id, _name):
         self.row = _row
         self.id = _id
-        self.link = _link
+        self.name = _name
 
     def to_string(self):
-        return 'row=%s, id=%s' % (self.row, self.id)
+        return 'row=%s, id=%s, name=%s' % (self.row, self.id, self.name)
 
 
 # 等待查找元素
@@ -35,7 +35,6 @@ def wait_for_find_ele(func, edge):
 def open_browser():
     options = Options()
     options.add_argument(r'--user-data-dir=C:\Users\mages\AppData\Local\Microsoft\Edge\User Data')
-    # options.add_experimental_option('detach', True)
     return webdriver.Edge(options=options)
 
 
@@ -103,8 +102,8 @@ def read_excel(sheet):
     return items
 
 
-# 换链接
-def change_link(info, edge):
+# 换名称
+def change_note_name(info, edge):
     manage = wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
     id_input = wait_for_find_ele(
@@ -121,30 +120,16 @@ def change_link(info, edge):
         lambda d: edit_div.find_elements(by=By.CLASS_NAME, value="d-link"), edge)
     edit_a[0].click()
 
-    table = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="el-table__fixed-body-wrapper"), edge)
-    # td = wait_for_find_ele(
-    #     lambda d: table.find_element(by=By.CLASS_NAME, value="el-table_1_column_14"))
-    td = wait_for_find_ele(
-        lambda d: table.find_elements(by=By.TAG_NAME, value="td"), edge)
-    change_btn = wait_for_find_ele(
-        lambda d: td[13].find_element(by=By.CLASS_NAME, value="link-text"), edge)
-    change_btn.click()
-
     clear_btn = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1jjt3ne"), edge)
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-18cbzsm"), edge)
     clear_btn.click()
-    link_input = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), edge)
-    link_input.clear()
-    time.sleep(0.5)
-    link_input.send_keys(info.link)
-    time.sleep(0.5)
 
-    save_btn = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-php29w"), edge)
-    save_btn.click()
-    time.sleep(0.7)
+    name_input = wait_for_find_ele(
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1azanbt"), edge)
+    name_input.send_keys('')
+    name_input.clear()
+    name_input.send_keys(info.name)
+    time.sleep(0.5)
 
     finish_btn = wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), edge)
@@ -170,7 +155,7 @@ switch_page(driver)
 print(current_time_str(), '切换页面成功')
 time.sleep(2)
 
-filepath = 'C:\\Users\\mages\\Desktop\\创意id+监测链接.xlsx'
+filepath = 'C:\\Users\\mages\\Desktop\\创意名称修改.xlsx'
 xlsx = openpyxl.load_workbook(filepath)
 active = xlsx.active
 lines = read_excel(active)
@@ -181,14 +166,14 @@ T1 = time.perf_counter()
 for i in range(0, size):
     line = lines[i]
     try:
-        change_link(line, driver)
+        change_note_name(line, driver)
         print(current_time_str(), i + 1, '/', size, '-', format((i + 1) / size * 100, '.2f') + '%',
               'cost:', format((time.perf_counter() - T1), '.2f'), 's => ', line.to_string())
         time.sleep(0.5)
         T1 = time.perf_counter()
     except BaseException as e:
         value = 'failure:' + str(e)
-        print(current_time_str(), '换链接异常：', value, line.to_string())
+        print(current_time_str(), '换笔记名称异常：', value, line.to_string())
         active.cell(row=line.row, column=3, value=value)
         driver.quit()
         driver = open_browser()

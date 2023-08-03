@@ -11,13 +11,11 @@ import openpyxl
 class Item:
     row = 0
     id = ''
-    link = ''
     log = ''
 
-    def __init__(self, _row, _id, _link):
+    def __init__(self, _row, _id):
         self.row = _row
         self.id = _id
-        self.link = _link
 
     def to_string(self):
         return 'row=%s, id=%s' % (self.row, self.id)
@@ -60,7 +58,7 @@ def login(username, password, edge):
             lambda d: d.find_element(by=By.CLASS_NAME, value="css-wp7z9d"), edge)
         login_btn.click()
     else:
-        print(current_time_str(), '当前已登录')
+        print('当前已登录')
 
 
 # 切换页面
@@ -92,19 +90,19 @@ def switch_page(edge):
 def read_excel(sheet):
     max_row = sheet.max_row
     max_column = sheet.max_column
-    print(current_time_str(), '最大行数：', max_row, '，最大列数：', max_column)
+    print('最大行数：', max_row, '，最大列数：', max_column)
 
     items = []
     for j in range(1, max_row + 1):
-        if sheet.cell(row=j, column=3).value == 'success':
+        if sheet.cell(row=j, column=2).value == 'success':
             continue
-        item = Item(j, sheet.cell(row=j, column=1).value, sheet.cell(row=j, column=2).value)
+        item = Item(j, sheet.cell(row=j, column=1).value)
         items.append(item)
     return items
 
 
-# 换链接
-def change_link(info, edge):
+# 暂停笔记
+def pause_note(info, edge):
     manage = wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
     id_input = wait_for_find_ele(
@@ -115,94 +113,64 @@ def change_link(info, edge):
     id_input.send_keys(Keys.ENTER)
     time.sleep(0.6)
 
-    edit_div = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
-    edit_a = wait_for_find_ele(
-        lambda d: edit_div.find_elements(by=By.CLASS_NAME, value="d-link"), edge)
-    edit_a[0].click()
+    pause_checkbox = wait_for_find_ele(
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1a4w089"), edge)
+    checked = pause_checkbox.get_attribute('data-is-checked')
 
-    table = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="el-table__fixed-body-wrapper"), edge)
-    # td = wait_for_find_ele(
-    #     lambda d: table.find_element(by=By.CLASS_NAME, value="el-table_1_column_14"))
-    td = wait_for_find_ele(
-        lambda d: table.find_elements(by=By.TAG_NAME, value="td"), edge)
-    change_btn = wait_for_find_ele(
-        lambda d: td[13].find_element(by=By.CLASS_NAME, value="link-text"), edge)
-    change_btn.click()
+    pause_switch = wait_for_find_ele(
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-vwjppn"), edge)
 
-    clear_btn = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1jjt3ne"), edge)
-    clear_btn.click()
-    link_input = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), edge)
-    link_input.clear()
+    if 'true' == checked:
+        pause_switch.click()
+    else:
+        print('笔记：', info.id, '已暂停')
     time.sleep(0.5)
-    link_input.send_keys(info.link)
-    time.sleep(0.5)
-
-    save_btn = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-php29w"), edge)
-    save_btn.click()
-    time.sleep(0.7)
-
-    finish_btn = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), edge)
-    finish_btn.click()
-
-
-# 当前时间
-def current_time_str():
-    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) + ':'
 
 
 # main
 driver = open_browser()
-print(current_time_str(), '打开Edge成功')
+print('打开Edge成功')
 driver.get("https://ad.xiaohongshu.com/")
 time.sleep(2)
 
 login('print(current_time_str(),', '', driver)
-print(current_time_str(), '登录账号成功')
+print('登录账号成功')
 time.sleep(2)
 
 switch_page(driver)
-print(current_time_str(), '切换页面成功')
+print('切换页面成功')
 time.sleep(2)
 
-filepath = 'C:\\Users\\mages\\Desktop\\创意id+监测链接.xlsx'
+filepath = 'C:\\Users\\mages\\Desktop\\暂停创意id.xlsx'
 xlsx = openpyxl.load_workbook(filepath)
 active = xlsx.active
 lines = read_excel(active)
 size = len(lines)
-print(current_time_str(), '读取文件成功，共读取数据', size, "条")
+print('读取文件成功，共读取数据', size, "条")
 
-T1 = time.perf_counter()
 for i in range(0, size):
     line = lines[i]
     try:
-        change_link(line, driver)
-        print(current_time_str(), i + 1, '/', size, '-', format((i + 1) / size * 100, '.2f') + '%',
-              'cost:', format((time.perf_counter() - T1), '.2f'), 's => ', line.to_string())
+        pause_note(line, driver)
+        print(i + 1, '/', size, '-', format((i + 1) / size * 100, '.2f'), '% => ', line.to_string())
         time.sleep(0.5)
-        T1 = time.perf_counter()
     except BaseException as e:
         value = 'failure:' + str(e)
-        print(current_time_str(), '换链接异常：', value, line.to_string())
-        active.cell(row=line.row, column=3, value=value)
+        print('暂停笔记异常：', value, line.to_string())
+        active.cell(row=line.row, column=2, value=value)
         driver.quit()
         driver = open_browser()
-        print(current_time_str(), '重新打开Edge成功')
+        print('重新打开Edge成功')
         driver.get("https://ad.xiaohongshu.com/")
         time.sleep(2)
         login('print(current_time_str(),', '', driver)
-        print(current_time_str(), '重新登录账号成功')
+        print('重新登录账号成功')
         time.sleep(2)
         switch_page(driver)
-        print(current_time_str(), '重新切换页面成功')
+        print('重新切换页面成功')
         time.sleep(2)
     else:
-        active.cell(row=line.row, column=3, value='success')
+        active.cell(row=line.row, column=2, value='success')
     finally:
         xlsx.save(filepath)
-print(current_time_str(), 'finish')
+print('finish')
