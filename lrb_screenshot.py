@@ -1,7 +1,11 @@
-from selenium import webdriver
-from selenium.webdriver.edge.options import Options
+import base64
 import time
+
 import openpyxl
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.options import Options
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class Item:
@@ -41,13 +45,30 @@ def read_excel(sheet):
     return items
 
 
+# 等待查找元素
+def wait_for_find_ele(edge, func):
+    ele = WebDriverWait(edge, timeout=10).until(func)
+    time.sleep(0.5)
+    return ele
+
+
+# base64转图片
+def base64_to_image_file(base64_image, file_path):
+    img_data = base64.b64decode(base64_image)
+    with open(file_path, 'wb') as f:
+        f.write(img_data)
+
+
 # 截图
 def screenshot(edge, row, save_dir):
     edge.get(row.link)
-    time.sleep(3)
+    edge.maximize_window()
+    time.sleep(2)
     filename = row.name + '.jpg'
     jpg_path = save_dir + filename
-    edge.get_screenshot_as_file(jpg_path)
+    note = wait_for_find_ele(edge, lambda d: d.find_element(by=By.ID, value='noteContainer'))
+    base64_img = note.screenshot_as_base64
+    base64_to_image_file(base64_img, jpg_path)
     print('save jpg success', jpg_path)
 
 
