@@ -6,7 +6,7 @@ import openpyxl
 from selenium.webdriver.common.by import By
 
 from common import log
-from lrb import lrb
+from lrb import util
 
 
 class Item:
@@ -48,26 +48,26 @@ def base64_to_image_file(base64_image, file_path):
 # 截图
 def screenshot(edge, row, save_dir):
     edge.get(row.link)
-    edge.maximize_window()
     time.sleep(2)
     filename = row.name + '.jpg'
     jpg_path = save_dir + filename
-    note = lrb.wait_for_find_ele(edge, lambda d: d.find_element(by=By.ID, value='noteContainer'))
+    note = util.wait_for_find_ele(lambda d: d.find_element(by=By.ID, value='noteContainer'), edge)
     base64_img = note.screenshot_as_base64
     base64_to_image_file(base64_img, jpg_path)
     return jpg_path
 
 
 # main
-filepath = 'C:\\Users\\Magese\\Desktop\\LRB笔记截图.xlsx'
+filepath = 'C:\\Users\\mages\\Desktop\\LRB笔记截图.xlsx'
 xlsx = openpyxl.load_workbook(filepath)
 active = xlsx.active
 lines = read_excel(active)
 size = len(lines)
 log.info('共读取待截图记录{}条', size)
 
-drive = lrb.open_browser()
-jpg_dir = 'C:\\Users\\Magese\\Desktop\\lrb_screenshot\\'
+drive = util.open_browser()
+drive.maximize_window()
+jpg_dir = 'C:\\Users\\mages\\Desktop\\lrb_screenshot\\'
 success = 0
 failure = 0
 result = ''
@@ -92,4 +92,4 @@ for i in range(0, size):
         xlsx.save(filepath)
 
 log.info('截图任务完成，成功{}条，失败{}条', success, failure)
-drive.quit()
+# drive.quit()

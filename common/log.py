@@ -11,5 +11,5 @@ def info(k, *p):
 
 # 循环日志
 def loop_msg(current, total, pre):
-    holder = 'loop progress: %s/%s %s%% cost:%sms'
+    holder = 'loop progress: %s/%s %s%% cost:%ss'
     return holder % (current, total, format(current / total * 100, '.2f'), format((time.perf_counter() - pre), '.2f'))

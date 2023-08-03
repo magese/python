@@ -12,7 +12,7 @@ from common import log
 # 打开浏览器
 def open_browser():
     options = Options()
-    options.add_argument(r'--user-data-dir=C:\Users\Magese\AppData\Local\Microsoft\Edge\User Data')
+    options.add_argument(r'--user-data-dir=C:\Users\mages\AppData\Local\Microsoft\Edge\User Data')
     return webdriver.Edge(options=options)
 
 
@@ -81,7 +81,7 @@ def prepare(reopen):
     edge.get("https://ad.xiaohongshu.com/")
     time.sleep(1)
 
-    login('', '', edge)
+    login('skiicn_lrb2021@163.com', 'Mediacom12345', edge)
     log.info('重新登录账号成功' if reopen else '登录账号成功')
     time.sleep(1)
 

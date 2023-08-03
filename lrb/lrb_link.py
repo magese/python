@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from common import log
-from lrb import lrb
+from lrb import util
 
 
 class Item:
@@ -41,9 +41,9 @@ def read_excel(sheet):
 
 # 换链接
 def change_link(info, edge):
-    manage = lrb.wait_for_find_ele(
+    manage = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
-    id_input = lrb.wait_for_find_ele(
+    id_input = util.wait_for_find_ele(
         lambda d: manage.find_element(by=By.TAG_NAME, value="input"), edge)
     id_input.send_keys('')
     id_input.clear()
@@ -51,42 +51,42 @@ def change_link(info, edge):
     id_input.send_keys(Keys.ENTER)
     time.sleep(0.6)
 
-    edit_div = lrb.wait_for_find_ele(
+    edit_div = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
-    edit_a = lrb.wait_for_find_ele(
+    edit_a = util.wait_for_find_ele(
         lambda d: edit_div.find_elements(by=By.CLASS_NAME, value="d-link"), edge)
     edit_a[0].click()
 
-    table = lrb.wait_for_find_ele(
+    table = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="el-table__fixed-body-wrapper"), edge)
-    td = lrb.wait_for_find_ele(
+    td = util.wait_for_find_ele(
         lambda d: table.find_elements(by=By.TAG_NAME, value="td"), edge)
-    change_btn = lrb.wait_for_find_ele(
+    change_btn = util.wait_for_find_ele(
         lambda d: td[13].find_element(by=By.CLASS_NAME, value="link-text"), edge)
     change_btn.click()
 
-    clear_btn = lrb.wait_for_find_ele(
+    clear_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-1jjt3ne"), edge)
     clear_btn.click()
-    link_input = lrb.wait_for_find_ele(
+    link_input = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), edge)
     link_input.clear()
     time.sleep(0.5)
     link_input.send_keys(info.link)
     time.sleep(0.5)
 
-    save_btn = lrb.wait_for_find_ele(
+    save_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-php29w"), edge)
     save_btn.click()
     time.sleep(0.7)
 
-    finish_btn = lrb.wait_for_find_ele(
+    finish_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), edge)
     finish_btn.click()
 
 
 # main
-driver = lrb.prepare(False)
+driver = util.prepare(False)
 
 filepath = 'C:\\Users\\mages\\Desktop\\创意id+监测链接.xlsx'
 xlsx = openpyxl.load_workbook(filepath)

@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from common import log
-from lrb import lrb
+from lrb import util
 
 
 class Item:
@@ -41,9 +41,9 @@ def read_excel(sheet):
 
 # 换名称
 def change_note_name(info, edge):
-    manage = lrb.wait_for_find_ele(
+    manage = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
-    id_input = lrb.wait_for_find_ele(
+    id_input = util.wait_for_find_ele(
         lambda d: manage.find_element(by=By.TAG_NAME, value="input"), edge)
     id_input.send_keys('')
     id_input.clear()
@@ -51,30 +51,30 @@ def change_note_name(info, edge):
     id_input.send_keys(Keys.ENTER)
     time.sleep(0.6)
 
-    edit_div = lrb.wait_for_find_ele(
+    edit_div = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
-    edit_a = lrb.wait_for_find_ele(
+    edit_a = util.wait_for_find_ele(
         lambda d: edit_div.find_elements(by=By.CLASS_NAME, value="d-link"), edge)
     edit_a[0].click()
 
-    clear_btn = lrb.wait_for_find_ele(
+    clear_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-18cbzsm"), edge)
     clear_btn.click()
 
-    name_input = lrb.wait_for_find_ele(
+    name_input = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-1azanbt"), edge)
     name_input.send_keys('')
     name_input.clear()
     name_input.send_keys(info.name)
     time.sleep(0.5)
 
-    finish_btn = lrb.wait_for_find_ele(
+    finish_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), edge)
     finish_btn.click()
 
 
 # main
-driver = lrb.prepare(False)
+driver = util.prepare(False)
 
 filepath = 'C:\\Users\\mages\\Desktop\\创意名称修改.xlsx'
 xlsx = openpyxl.load_workbook(filepath)
@@ -97,7 +97,7 @@ for i in range(0, size):
         log.info('{} => 换笔记名称异常：{} => {}', log.loop_msg(i + 1, size, T1), result, line.to_string())
 
         driver.quit()
-        driver = lrb.prepare(True)
+        driver = util.prepare(True)
 
     else:
         result = 'success'
