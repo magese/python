@@ -1,5 +1,6 @@
 import base64
 import time
+import traceback
 
 import openpyxl
 from selenium import webdriver
@@ -79,23 +80,25 @@ jpg_dir = 'C:\\Users\\Magese\\Desktop\\lrb_screenshot\\'
 success = 0
 failure = 0
 result = ''
+start = time.perf_counter()
 
 for i in range(0, size):
     line = lines[i]
     try:
         save_path = screenshot(drive, line, jpg_dir)
-        lrb_util.log('{} / {} - {}% => save jpg success => {}', line.row, size,
-                     format(line.row / size * 100, '.2f'), save_path)
-    except RuntimeError:
-        lrb_util.log('截图处理异常 =>', line.to_string())
+        lrb_util.log('{} => save jpg success => {}', lrb_util.loop_msg(i + 1, size, start), save_path)
+    except BaseException as e:
+        traceback.print_exc()
         failure += 1
-        result = 'failure'
+        result = 'failure:' + repr(e)
+        lrb_util.log('{} => save jpg failure => {}', lrb_util.loop_msg(i + 1, size, start), result)
     else:
         success += 1
         result = 'success'
-
-    active.cell(row=line.row, column=3, value=result)
-    xlsx.save(filepath)
+    finally:
+        start = time.perf_counter()
+        active.cell(row=line.row, column=3, value=result)
+        xlsx.save(filepath)
 
 lrb_util.log('截图任务完成，成功{}条，失败{}条', success, failure)
 drive.close()
