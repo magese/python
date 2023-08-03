@@ -12,16 +12,16 @@ from lrb import lrb
 class Item:
     row = 0
     id = ''
-    link = ''
+    name = ''
     log = ''
 
-    def __init__(self, _row, _id, _link):
+    def __init__(self, _row, _id, _name):
         self.row = _row
         self.id = _id
-        self.link = _link
+        self.name = _name
 
     def to_string(self):
-        return 'row=%s, id=%s' % (self.row, self.id)
+        return 'row=%s, id=%s, name=%s' % (self.row, self.id, self.name)
 
 
 # 读取文件内容
@@ -39,8 +39,8 @@ def read_excel(sheet):
     return items
 
 
-# 换链接
-def change_link(info, edge):
+# 换名称
+def change_note_name(info, edge):
     manage = lrb.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
     id_input = lrb.wait_for_find_ele(
@@ -57,28 +57,16 @@ def change_link(info, edge):
         lambda d: edit_div.find_elements(by=By.CLASS_NAME, value="d-link"), edge)
     edit_a[0].click()
 
-    table = lrb.wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="el-table__fixed-body-wrapper"), edge)
-    td = lrb.wait_for_find_ele(
-        lambda d: table.find_elements(by=By.TAG_NAME, value="td"), edge)
-    change_btn = lrb.wait_for_find_ele(
-        lambda d: td[13].find_element(by=By.CLASS_NAME, value="link-text"), edge)
-    change_btn.click()
-
     clear_btn = lrb.wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1jjt3ne"), edge)
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-18cbzsm"), edge)
     clear_btn.click()
-    link_input = lrb.wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), edge)
-    link_input.clear()
-    time.sleep(0.5)
-    link_input.send_keys(info.link)
-    time.sleep(0.5)
 
-    save_btn = lrb.wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-php29w"), edge)
-    save_btn.click()
-    time.sleep(0.7)
+    name_input = lrb.wait_for_find_ele(
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1azanbt"), edge)
+    name_input.send_keys('')
+    name_input.clear()
+    name_input.send_keys(info.name)
+    time.sleep(0.5)
 
     finish_btn = lrb.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), edge)
@@ -88,31 +76,35 @@ def change_link(info, edge):
 # main
 driver = lrb.prepare(False)
 
-filepath = 'C:\\Users\\mages\\Desktop\\创意id+监测链接.xlsx'
+filepath = 'C:\\Users\\mages\\Desktop\\创意名称修改.xlsx'
 xlsx = openpyxl.load_workbook(filepath)
 active = xlsx.active
 lines = read_excel(active)
 size = len(lines)
 log.info('读取文件成功，共读取数据{}条', size)
 result = ''
-T1 = time.perf_counter()
 
+T1 = time.perf_counter()
 for i in range(0, size):
     line = lines[i]
     try:
-        change_link(line, driver)
-        log.info('{} => 换监测链接成功：{}', log.loop_msg(i + 1, size, T1), line.to_string())
+        change_note_name(line, driver)
+        log.info('{} => 换笔记名称成功：{}', log.loop_msg(i + 1, size, T1), line.to_string())
 
     except BaseException as e:
         traceback.print_exc()
         result = 'failure:' + repr(e)
-        log.info('{} => 换监测链接异常：{} => {}', log.loop_msg(i + 1, size, T1), result, line.to_string())
+        log.info('{} => 换笔记名称异常：{} => {}', log.loop_msg(i + 1, size, T1), result, line.to_string())
+
+        driver.quit()
+        driver = lrb.prepare(True)
 
     else:
         result = 'success'
         time.sleep(0.5)
     finally:
-        active.cell(row=line.row, column=3, value='success')
+        T1 = time.perf_counter()
+        active.cell(row=line.row, column=3, value=result)
         xlsx.save(filepath)
 
 log.info('finish')
