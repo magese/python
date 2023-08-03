@@ -5,7 +5,8 @@ import openpyxl
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
-from selenium.webdriver.support.wait import WebDriverWait
+
+import lrb_util
 
 
 class Item:
@@ -34,7 +35,7 @@ def open_browser():
 def read_excel(sheet):
     max_row = sheet.max_row
     max_column = sheet.max_column
-    print('读取excel，最大行数：', max_row, '，最大列数：', max_column)
+    lrb_util.log('读取excel，最大行数：{}，最大列数：{}', max_row, max_column)
 
     items = []
     for j in range(1, max_row + 1):
@@ -43,13 +44,6 @@ def read_excel(sheet):
         item = Item(j, sheet.cell(row=j, column=1).value, sheet.cell(row=j, column=2).value)
         items.append(item)
     return items
-
-
-# 等待查找元素
-def wait_for_find_ele(edge, func):
-    ele = WebDriverWait(edge, timeout=10).until(func)
-    time.sleep(0.5)
-    return ele
 
 
 # base64转图片
@@ -66,10 +60,10 @@ def screenshot(edge, row, save_dir):
     time.sleep(2)
     filename = row.name + '.jpg'
     jpg_path = save_dir + filename
-    note = wait_for_find_ele(edge, lambda d: d.find_element(by=By.ID, value='noteContainer'))
+    note = lrb_util.wait_for_find_ele(edge, lambda d: d.find_element(by=By.ID, value='noteContainer'))
     base64_img = note.screenshot_as_base64
     base64_to_image_file(base64_img, jpg_path)
-    print('save jpg success', jpg_path)
+    return jpg_path
 
 
 # main
@@ -78,12 +72,30 @@ xlsx = openpyxl.load_workbook(filepath)
 active = xlsx.active
 lines = read_excel(active)
 size = len(lines)
-print('共读取待截图记录', size, '条')
+lrb_util.log('共读取待截图记录{}条', size)
 
 drive = open_browser()
 jpg_dir = 'C:\\Users\\Magese\\Desktop\\lrb_screenshot\\'
+success = 0
+failure = 0
+result = ''
 
 for i in range(0, size):
     line = lines[i]
-    screenshot(drive, line, jpg_dir)
+    try:
+        save_path = screenshot(drive, line, jpg_dir)
+        lrb_util.log('{} / {} - {}% => save jpg success => {}', line.row, size,
+                     format(line.row / size * 100, '.2f'), save_path)
+    except RuntimeError:
+        lrb_util.log('截图处理异常 =>', line.to_string())
+        failure += 1
+        result = 'failure'
+    else:
+        success += 1
+        result = 'success'
+
+    active.cell(row=line.row, column=3, value=result)
+    xlsx.save(filepath)
+
+lrb_util.log('截图任务完成，成功{}条，失败{}条', success, failure)
 drive.close()
