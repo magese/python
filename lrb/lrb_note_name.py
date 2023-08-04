@@ -105,17 +105,17 @@ def main():
     log.info('读取文件成功，共读取数据{}条', size)
     result = ''
 
-    T1 = time.perf_counter()
+    start = time.perf_counter()
     for i in range(0, size):
         line = lines[i]
         try:
             is_change = change_note_name(line, driver)
-            log.info('{} => {}：{}', log.loop_msg(i + 1, size, T1), '换笔记名称成功' if is_change else '无需更新名称', line.to_string())
+            log.info('{} => {}：{}', log.loop_msg(i + 1, size, start), '换笔记名称成功' if is_change else '无需更新名称', line.to_string())
 
         except BaseException as e:
             traceback.print_exc()
             result = 'failure:' + repr(e)
-            log.info('{} => 换笔记名称异常：{} => {}', log.loop_msg(i + 1, size, T1), result, line.to_string())
+            log.info('{} => 换笔记名称异常：{} => {}', log.loop_msg(i + 1, size, start), result, line.to_string())
 
             driver.quit()
             driver = util.prepare(True)
@@ -124,7 +124,7 @@ def main():
             result = 'success'
             time.sleep(0.5)
         finally:
-            T1 = time.perf_counter()
+            start = time.perf_counter()
             active.cell(row=line.row, column=3, value=result)
             xlsx.save(filepath)
     log.info('finish')
