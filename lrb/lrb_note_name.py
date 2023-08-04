@@ -130,4 +130,5 @@ def main():
     log.info('finish')
 
 
-main()
+if __name__ == '__main__':
+    main()
