@@ -2,6 +2,7 @@ import time
 import traceback
 
 import openpyxl
+from selenium.common import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -49,13 +50,22 @@ def change_link(info, edge):
     id_input.clear()
     id_input.send_keys(info.id)
     id_input.send_keys(Keys.ENTER)
-    time.sleep(0.6)
+    time.sleep(1)
 
-    edit_div = util.wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
-    edit_a = util.wait_for_find_ele(
-        lambda d: edit_div.find_elements(by=By.CLASS_NAME, value="d-link"), edge)
-    edit_a[0].click()
+    edit_retry = 3
+    while edit_retry > 0:
+        try:
+            edit_div = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
+            edit_a = util.wait_for_find_ele(
+                lambda d: edit_div.find_elements(by=By.TAG_NAME, value="a"), edge)
+            edit_a[0].click()
+            break
+        except StaleElementReferenceException:
+            edit_retry -= 1
+            time.sleep(0.5)
+
+    edge.switch_to.window(edge.window_handles[-1])
 
     table = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="el-table__fixed-body-wrapper"), edge)
@@ -71,9 +81,7 @@ def change_link(info, edge):
     link_input = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), edge)
     link_input.clear()
-    time.sleep(0.5)
     link_input.send_keys(info.link)
-    time.sleep(0.5)
 
     save_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-php29w"), edge)
@@ -83,7 +91,9 @@ def change_link(info, edge):
     finish_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), edge)
     finish_btn.click()
-
+    time.sleep(1)
+    edge.close()
+    edge.switch_to.window(edge.window_handles[0])
 
 # main
 driver = util.prepare(False)

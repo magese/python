@@ -2,6 +2,7 @@ import time
 import traceback
 
 import openpyxl
+from selenium.common import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -49,20 +50,35 @@ def change_note_name(info, edge):
     id_input.clear()
     id_input.send_keys(info.id)
     id_input.send_keys(Keys.ENTER)
-    time.sleep(0.6)
+    time.sleep(1)
 
-    edit_div = util.wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
-    edit_a = util.wait_for_find_ele(
-        lambda d: edit_div.find_elements(by=By.CLASS_NAME, value="d-link"), edge)
-    edit_a[0].click()
+    edit_retry = 3
+    while edit_retry > 0:
+        try:
+            edit_div = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
+            edit_a = util.wait_for_find_ele(
+                lambda d: edit_div.find_elements(by=By.TAG_NAME, value="a"), edge)
+            edit_a[0].click()
+            break
+        except StaleElementReferenceException:
+            edit_retry -= 1
+            time.sleep(0.5)
+
+    edge.switch_to.window(edge.window_handles[-1])
+
+    name_input = util.wait_for_find_ele(
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1azanbt"), edge)
+    input_value = name_input.get_attribute('value')
+    if input_value == info.name:
+        edge.close()
+        edge.switch_to.window(edge.window_handles[0])
+        return False
 
     clear_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-18cbzsm"), edge)
     clear_btn.click()
 
-    name_input = util.wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-1azanbt"), edge)
     name_input.send_keys('')
     name_input.clear()
     name_input.send_keys(info.name)
@@ -71,12 +87,16 @@ def change_note_name(info, edge):
     finish_btn = util.wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), edge)
     finish_btn.click()
+    time.sleep(1)
+    edge.close()
+    edge.switch_to.window(edge.window_handles[0])
+    return True
 
 
 # main
 driver = util.prepare(False)
 
-filepath = 'C:\\Users\\mages\\Desktop\\创意名称修改.xlsx'
+filepath = r'C:\Users\Magese\Desktop\创意名称修改.xlsx'
 xlsx = openpyxl.load_workbook(filepath)
 active = xlsx.active
 lines = read_excel(active)
@@ -88,8 +108,8 @@ T1 = time.perf_counter()
 for i in range(0, size):
     line = lines[i]
     try:
-        change_note_name(line, driver)
-        log.info('{} => 换笔记名称成功：{}', log.loop_msg(i + 1, size, T1), line.to_string())
+        is_change = change_note_name(line, driver)
+        log.info('{} => {}：{}', log.loop_msg(i + 1, size, T1), '换笔记名称成功' if is_change else '无需更新名称', line.to_string())
 
     except BaseException as e:
         traceback.print_exc()

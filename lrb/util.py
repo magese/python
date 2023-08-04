@@ -1,7 +1,7 @@
 import time
 
 from selenium import webdriver
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.wait import WebDriverWait
@@ -12,16 +12,21 @@ from common import log
 # 打开浏览器
 def open_browser():
     options = Options()
-    options.add_argument(r'--user-data-dir=C:\Users\mages\AppData\Local\Microsoft\Edge\User Data')
+    options.add_argument(r'--user-data-dir=C:\Users\Magese\AppData\Local\Microsoft\Edge\User Data')
     return webdriver.Edge(options=options)
 
 
 # 等待查找元素
 def wait_for_find_ele(func, edge):
-    time.sleep(0.3)
-    ele = WebDriverWait(edge, timeout=10).until(func)
-    time.sleep(0.3)
-    return ele
+    retry_time = 3
+
+    while retry_time > 0:
+        try:
+            return WebDriverWait(edge, timeout=10).until(func)
+        except StaleElementReferenceException:
+            log.info('retry wait for find elements!')
+            retry_time -= 1
+        time.sleep(0.3)
 
 
 # 登录
@@ -81,7 +86,7 @@ def prepare(reopen):
     edge.get("https://ad.xiaohongshu.com/")
     time.sleep(1)
 
-    login('skiicn_lrb2021@163.com', 'Mediacom12345', edge)
+    login('', '', edge)
     log.info('重新登录账号成功' if reopen else '登录账号成功')
     time.sleep(1)
 
