@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 from selenium import webdriver
 from selenium.common import TimeoutException, StaleElementReferenceException
@@ -12,7 +13,7 @@ from common import log
 # 打开浏览器
 def open_browser():
     options = Options()
-    options.add_argument(r'--user-data-dir=C:\Users\Magese\AppData\Local\Microsoft\Edge\User Data')
+    options.add_argument(r'--user-data-dir=' + str(Path.home()) + r'\AppData\Local\Microsoft\Edge\User Data')
     return webdriver.Edge(options=options)
 
 
