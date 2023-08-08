@@ -190,7 +190,7 @@ class ScreenshotUI(QMainWindow):
         w.setMinimumWidth(500)
         self.setGeometry(300, 300, 750, 100)
         icon = QIcon()
-        icon.addPixmap(QPixmap('favicon.ico'), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addPixmap(QPixmap('./favicon.ico'), QIcon.Mode.Normal, QIcon.State.Off)
         self.setWindowIcon(icon)
         self.setWindowTitle('小红书截图 - V1.0.0  Author: magese@live.cn')
 
