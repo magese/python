@@ -80,14 +80,14 @@ def switch_note_id_page(edge):
 
 
 # 准备
-def prepare(reopen):
+def prepare(reopen, username, password):
     edge = open_browser()
     log.info('重新打开Edge成功' if reopen else '打开Edge成功')
 
     edge.get("https://ad.xiaohongshu.com/")
     time.sleep(1)
 
-    login('', '', edge)
+    login(username, password, edge)
     log.info('重新登录账号成功' if reopen else '登录账号成功')
     time.sleep(1)
 

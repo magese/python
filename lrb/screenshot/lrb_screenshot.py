@@ -85,7 +85,7 @@ def main():
     ls = LrbScreenshot(excel_path, save_dir)
 
     excel = ls.read_excel()
-    log.info('读取excel最大行数：{}，，最大列数：{}', excel.max_row, excel.max_column)
+    log.info('读取excel最大行数：{}，最大列数：{}', excel.max_row, excel.max_column)
 
     size = len(excel.lines)
     log.info('共读取待截图记录{}条', size)
