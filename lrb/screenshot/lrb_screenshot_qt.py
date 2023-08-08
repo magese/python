@@ -1,18 +1,22 @@
+import ctypes
 import sys
 import time
 import traceback
 from pathlib import Path
 
+import qdarkstyle
 from PyQt6.QtCore import QThread, Qt, pyqtSignal
+from PyQt6.QtGui import QIcon, QPixmap, QTextCursor
 from PyQt6.QtWidgets import (QWidget, QLineEdit, QGridLayout, QApplication, QFileDialog, QPushButton, QMainWindow,
                              QTextEdit, QMessageBox, QProgressBar)
+from qdarkstyle import LightPalette
 
-from common import log
-from lrb import util
-from lrb.qt.lrb_screenshot import LrbScreenshot
-
+from lrb.common import log, util
+from lrb.screenshot.lrb_screenshot import LrbScreenshot
 
 global stop_status
+
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("lrb_screenshot_qt")
 
 
 class Worker(QThread):
@@ -31,8 +35,13 @@ class Worker(QThread):
     # noinspection PyUnresolvedReferences
     def run(self):
         ls = LrbScreenshot(self.excel_path, self.save_dir)
-        excel = ls.read_excel()
-        self.log('读取excel最大行数：{}，最大列数：{}', excel.max_row, excel.max_column)
+        try:
+            excel = ls.read_excel()
+            self.log('读取excel最大行数：{}，最大列数：{}', excel.max_row, excel.max_column)
+        except BaseException as e:
+            traceback.print_exc()
+            self.log('读取excel失败，请检查文件，错误信息：{}', repr(e))
+            return
 
         size = len(excel.lines)
         self.log('共读取待截图记录{}条', size)
@@ -40,8 +49,14 @@ class Worker(QThread):
         if size <= 0:
             return
 
-        drive = util.open_browser()
-        drive.maximize_window()
+        try:
+            drive = util.open_browser()
+            drive.maximize_window()
+        except BaseException as e:
+            traceback.print_exc()
+            self.log('打开Edge浏览器失败，请检查驱动。错误信息：{}', repr(e))
+            return
+
         success = 0
         failure = 0
         result = ''
@@ -140,6 +155,7 @@ class ScreenshotUI(QMainWindow):
         self.logger.setReadOnly(True)
         self.logger.setMinimumHeight(200)
         self.logger.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        self.logger.textChanged.connect(self.scroll_to_end)
         self.logger.viewport().setCursor(Qt.CursorShape.ArrowCursor)
         self._thread.logger = self.logger
 
@@ -171,10 +187,12 @@ class ScreenshotUI(QMainWindow):
         grid.addWidget(self.logger, 5, 0, 8, 5)
 
         w.setLayout(grid)
-
         w.setMinimumWidth(500)
-        self.setGeometry(300, 300, 650, 100)
-        self.setWindowTitle('小红书截图')
+        self.setGeometry(300, 300, 750, 100)
+        icon = QIcon()
+        icon.addPixmap(QPixmap('favicon.ico'), QIcon.Mode.Normal, QIcon.State.Off)
+        self.setWindowIcon(icon)
+        self.setWindowTitle('小红书截图 - V1.0.0  Author: magese@live.cn')
 
     def excel_select(self):
         w = self.centralWidget()
@@ -191,6 +209,9 @@ class ScreenshotUI(QMainWindow):
         self.save_dir_edit.setText(fname)
         msg = f'选择截图保存文件夹：{fname}'
         self.statusBar().showMessage(msg)
+
+    def scroll_to_end(self):
+        self.logger.moveCursor(QTextCursor.MoveOperation.End)
 
     def status(self, v):
         if v == 0:
@@ -276,8 +297,16 @@ class ScreenshotUI(QMainWindow):
 
 
 def main():
+    """
+    python -m nuitka --onefile --mingw64 --standalone --windows-disable-console
+    --include-plugin-directory=D:/Develop/python/lrb
+    --windows-icon-from-ico=./favicon.ico
+    --enable-plugin=pyqt6
+    lrb_screenshot_qt.py
+    """
     app = QApplication(sys.argv)
     ui = ScreenshotUI()
+    ui.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt6', palette=LightPalette()))
     ui.show()
     sys.exit(app.exec())
 

@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.wait import WebDriverWait
 
-from common import log
+from lrb.common import log
 
 
 # 打开浏览器

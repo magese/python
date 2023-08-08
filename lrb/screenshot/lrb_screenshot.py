@@ -5,8 +5,7 @@ import traceback
 import openpyxl
 from selenium.webdriver.common.by import By
 
-from common import log
-from lrb import util
+from lrb.common import log, util
 
 
 class Item:
