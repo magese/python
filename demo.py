@@ -1,8 +1,11 @@
-import time
+import base64
+import os
 
-T1 = time.perf_counter()
-time.sleep(1)
-T2 = time.perf_counter()
-print((T2 - T1))
-print(format((T2 - T1), '.2f'))
-print('%.2f'%((T2 - T1) / 1000 / 1000))
+
+def trans_base64_1(file_path):
+    with open(file_path, "rb") as f:
+        return str(base64.b64encode(f.read()))[2:-1]
+
+
+filepath = r'C:\Users\mages\Desktop\favicon.ico'
+print(os.path.abspath(os.path.dirname(__file__)))
