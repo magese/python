@@ -57,6 +57,13 @@ class LrbSearchWord(Lrb):
                     lambda d: d
                     .find_element(by=By.ID, value="ff22")
                     .find_element(by=By.TAG_NAME, value="input"), self.edge)
+
+                if word_input == self.item.word:
+                    time.sleep(0.5)
+                    self.edge.close()
+                    self.edge.switch_to.window(self.edge.window_handles[0])
+                    return True
+
                 word_input.send_keys('')
                 word_input.clear()
                 word_input.send_keys(self.item.word)
