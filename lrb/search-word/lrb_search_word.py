@@ -62,7 +62,8 @@ class LrbSearchWord(Lrb):
                     time.sleep(0.5)
                     self.edge.close()
                     self.edge.switch_to.window(self.edge.window_handles[0])
-                    return True
+                    is_changed = True
+                    break
 
                 word_input.send_keys('')
                 word_input.clear()
