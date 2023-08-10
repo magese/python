@@ -95,7 +95,7 @@ def change_link(info, edge):
     edge.switch_to.window(edge.window_handles[0])
 
 # main
-driver = util.prepare(False)
+driver = util.creative_page(False)
 
 filepath = 'C:\\Users\\mages\\Desktop\\创意id+监测链接.xlsx'
 xlsx = openpyxl.load_workbook(filepath)

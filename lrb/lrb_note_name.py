@@ -94,7 +94,7 @@ def change_note_name(info, edge):
 
 # main
 def main():
-    driver = util.prepare(False)
+    driver = util.creative_page(False)
 
     filepath = r'C:\Users\Magese\Desktop\创意名称修改.xlsx'
     xlsx = openpyxl.load_workbook(filepath)
@@ -117,7 +117,7 @@ def main():
             log.info('{} => 换笔记名称异常：{} => {}', log.loop_msg(i + 1, size, start), result, line.to_string())
 
             driver.quit()
-            driver = util.prepare(True)
+            driver = util.creative_page(True)
 
         else:
             result = 'success'

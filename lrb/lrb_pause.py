@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from lrb.common import log, util
+from lrb.common.Model import Excel
 
 
 class Item:
@@ -21,23 +22,6 @@ class Item:
 
     def to_string(self):
         return 'row=%s, id=%s' % (self.row, self.id)
-
-
-class Excel:
-    path = ''
-    xlsx = None
-    active = None
-    max_row = 0
-    max_column = 0
-    lines: list = None
-
-    def __init__(self, path, xlsx, active, max_row, max_column, lines):
-        self.path = path
-        self.xlsx = xlsx
-        self.active = active
-        self.max_row = max_row
-        self.max_column = max_column
-        self.lines = lines
 
 
 class LrbPause(QObject):
@@ -106,7 +90,7 @@ class LrbPause(QObject):
     # noinspection PyUnresolvedReferences
     def exec(self):
         self.__read_excel()
-        driver = util.prepare(False, self.__username, self.__password)
+        driver = util.creative_page(False, self.__username, self.__password)
         size = len(self.excel.lines)
         success = 0
         failure = 0
@@ -129,7 +113,7 @@ class LrbPause(QObject):
                                       log.loop_msg(i + 1, size, start), result, line.to_string()))
 
                 driver.quit()
-                driver = util.prepare(True, self.__username, self.__password)
+                driver = util.creative_page(True, self.__username, self.__password)
             else:
                 success += 1
                 result = 'success-paused' if is_paused else 'success'
@@ -146,8 +130,8 @@ class LrbPause(QObject):
 # main
 # noinspection PyUnresolvedReferences
 def main():
-    username = 'skiicn_lrb2021@163.com'
-    password = 'Mediacom12345'
+    username = ''
+    password = ''
     filepath = 'C:\\Users\\mages\\Desktop\\暂停创意id.xlsx'
     lp = LrbPause(filepath, username, password)
     lp.msg.connect(lambda m: print(m))
