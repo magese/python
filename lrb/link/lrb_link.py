@@ -3,7 +3,6 @@ import time
 import openpyxl
 from selenium.common import StaleElementReferenceException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 
 from lrb.common import util
 from lrb.common.Model import Lrb, Excel
@@ -43,24 +42,14 @@ class LrbLink(Lrb):
         self.excel = Excel(self._excel_path, xlsx, active, max_row, max_column, items)
 
     def __change_link(self):
-        manage = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), self.edge)
-        id_input = util.wait_for_find_ele(
-            lambda d: manage.find_element(by=By.TAG_NAME, value="input"), self.edge)
-        id_input.send_keys('')
-        id_input.clear()
-        id_input.send_keys(self.item.id)
-        id_input.send_keys(Keys.ENTER)
-        time.sleep(1)
+        util.search_id(self.item.id, self.edge)
+        time.sleep(1.2)
 
         edit_retry = 3
         while edit_retry > 0:
             try:
-                edit_div = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), self.edge)
-                edit_a = util.wait_for_find_ele(
-                    lambda d: edit_div.find_elements(by=By.TAG_NAME, value="a"), self.edge)
-                edit_a[0].click()
+                util.click_edit(self.edge)
+                time.sleep(1.2)
                 break
             except StaleElementReferenceException:
                 edit_retry -= 1

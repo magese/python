@@ -3,6 +3,7 @@ from pathlib import Path
 
 from selenium import webdriver
 from selenium.common import TimeoutException, StaleElementReferenceException
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.wait import WebDriverWait
@@ -10,14 +11,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 from lrb.common import log
 
 
-# 打开浏览器
 def open_browser():
     options = Options()
     options.add_argument(r'--user-data-dir=' + str(Path.home()) + r'\AppData\Local\Microsoft\Edge\User Data')
     return webdriver.Edge(options=options)
 
 
-# 等待查找元素
 def wait_for_find_ele(func, edge):
     retry_time = 3
 
@@ -30,10 +29,28 @@ def wait_for_find_ele(func, edge):
         time.sleep(0.3)
 
 
-# 登录
+def search_id(id, edge):
+    manage = wait_for_find_ele(
+        lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
+    id_input = wait_for_find_ele(
+        lambda d: manage.find_element(by=By.TAG_NAME, value="input"), edge)
+    id_input.send_keys('')
+    id_input.clear()
+    id_input.send_keys(id)
+    id_input.send_keys(Keys.ENTER)
+
+
+def click_edit(edge):
+    edit_div = wait_for_find_ele(
+        lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
+    edit_a = wait_for_find_ele(
+        lambda d: edit_div.find_elements(by=By.TAG_NAME, value="a"), edge)
+    edit_a[0].click()
+
+
 def login(username, password, edge):
     try:
-        WebDriverWait(edge, timeout=2).until(lambda d: d.find_element(by=By.CLASS_NAME, value="action-icon-group"))
+        WebDriverWait(edge, timeout=3).until(lambda d: d.find_element(by=By.CLASS_NAME, value="action-icon-group"))
     except TimeoutException:
         login_tab = wait_for_find_ele(
             lambda d: d.find_element(by=By.CLASS_NAME, value="css-404bxh"), edge)

@@ -2,7 +2,6 @@ import time
 
 import openpyxl
 from selenium.common import StaleElementReferenceException
-from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from lrb.common import util
@@ -54,14 +53,7 @@ class LrbNegativeWord(Lrb):
         is_add = False
         while retry > 0:
             try:
-                manage = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), self.edge)
-                id_input = util.wait_for_find_ele(
-                    lambda d: manage.find_element(by=By.TAG_NAME, value="input"), self.edge)
-                id_input.send_keys('')
-                id_input.clear()
-                id_input.send_keys(self.item.id)
-                id_input.send_keys(Keys.ENTER)
+                util.search_id(self.item.id, self.edge)
                 time.sleep(1.2)
 
                 tbody = util.wait_for_find_ele(
