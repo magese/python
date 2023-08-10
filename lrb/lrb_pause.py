@@ -1,14 +1,12 @@
 import time
-import traceback
 
 import openpyxl
-from PyQt6.QtCore import pyqtSignal, QObject
 from selenium.common import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from lrb.common import log, util
-from lrb.common.Model import Excel
+from lrb.common.Model import Excel, Lrb
 
 
 class Item:
@@ -24,22 +22,10 @@ class Item:
         return 'row=%s, id=%s' % (self.row, self.id)
 
 
-class LrbPause(QObject):
-    __excel_path: str = ''
-    __username: str = ''
-    __password: str = ''
-    excel: Excel = None
-    msg = pyqtSignal(str)
+class LrbPause(Lrb):
 
-    def __init__(self, excel_path, username, password):
-        super().__init__()
-        self.__excel_path = excel_path
-        self.__username = username
-        self.__password = password
-
-    # noinspection PyUnresolvedReferences
     def __read_excel(self):
-        xlsx = openpyxl.load_workbook(self.__excel_path)
+        xlsx = openpyxl.load_workbook(self._excel_path)
         active = xlsx.active
         max_row = active.max_row
         max_column = active.max_column
@@ -52,30 +38,29 @@ class LrbPause(QObject):
             item = Item(j, active.cell(row=j, column=1).value)
             items.append(item)
         self.msg.emit(log.msg('共读取待暂停笔记ID {}条', len(items)))
-        self.excel = Excel(self.__excel_path, xlsx, active, max_row, max_column, items)
+        self.excel = Excel(self._excel_path, xlsx, active, max_row, max_column, items)
 
-    @staticmethod
-    def __pause_note(info, edge):
+    def __pause_note(self):
         retry = 3
         is_paused = True
         while retry > 0:
             try:
                 manage = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
+                    lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), self.edge)
                 id_input = util.wait_for_find_ele(
-                    lambda d: manage.find_element(by=By.TAG_NAME, value="input"), edge)
+                    lambda d: manage.find_element(by=By.TAG_NAME, value="input"), self.edge)
                 id_input.send_keys('')
                 id_input.clear()
-                id_input.send_keys(info.id)
+                id_input.send_keys(self.item.id)
                 id_input.send_keys(Keys.ENTER)
                 time.sleep(1)
 
                 pause_checkbox = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="css-1a4w089"), edge)
+                    lambda d: d.find_element(by=By.CLASS_NAME, value="css-1a4w089"), self.edge)
                 checked = pause_checkbox.get_attribute('data-is-checked')
 
                 pause_switch = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="css-vwjppn"), edge)
+                    lambda d: d.find_element(by=By.CLASS_NAME, value="css-vwjppn"), self.edge)
 
                 if 'true' == checked:
                     pause_switch.click()
@@ -87,44 +72,14 @@ class LrbPause(QObject):
                 time.sleep(0.5)
         return is_paused
 
-    # noinspection PyUnresolvedReferences
-    def exec(self):
-        self.__read_excel()
-        driver = util.creative_page(False, self.__username, self.__password)
-        size = len(self.excel.lines)
-        success = 0
-        failure = 0
-        result = ''
-        start = time.perf_counter()
-
-        for i in range(0, size):
-            line = self.excel.lines[i]
-            try:
-                is_paused = self.__pause_note(line, driver)
-                note = '笔记已暂停' if is_paused else '暂停笔记成功'
-                self.msg.emit(
-                    log.msg('{} => {}：{}', log.loop_msg(i + 1, size, start), note, line.to_string()))
-
-            except BaseException as e:
-                traceback.print_exc()
-                failure += 1
-                result = 'failure:' + repr(e)
-                self.msg.emit(log.msg('{} => 暂停笔记异常：{} => {}',
-                                      log.loop_msg(i + 1, size, start), result, line.to_string()))
-
-                driver.quit()
-                driver = util.creative_page(True, self.__username, self.__password)
-            else:
-                success += 1
-                result = 'success-paused' if is_paused else 'success'
-                time.sleep(0.5)
-            finally:
-                start = time.perf_counter()
-                self.excel.active.cell(row=line.row, column=2, value=result)
-                self.excel.xlsx.save(self.excel.path)
-
-        self.msg.emit(log.msg('截图任务完成，成功{}条，失败{}条', success, failure))
-        driver.quit()
+    def begin(self):
+        super().execute(
+            '暂停笔记',
+            self.__read_excel,
+            util.unit_page,
+            self.__pause_note,
+            2
+        )
 
 
 # main
@@ -135,7 +90,7 @@ def main():
     filepath = 'C:\\Users\\mages\\Desktop\\暂停创意id.xlsx'
     lp = LrbPause(filepath, username, password)
     lp.msg.connect(lambda m: print(m))
-    lp.exec()
+    lp.begin()
 
 
 if __name__ == '__main__':

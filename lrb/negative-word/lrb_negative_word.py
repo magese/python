@@ -1,15 +1,12 @@
 import time
-import traceback
 
 import openpyxl
-from PyQt6.QtCore import QThread, pyqtSignal
 from selenium.common import StaleElementReferenceException
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.webdriver import WebDriver
 
-from lrb.common import log, util
-from lrb.common.Model import Excel
+from lrb.common import util
+from lrb.common.Model import Excel, Lrb
 
 
 class Item:
@@ -33,32 +30,14 @@ class Item:
                 (self.row, self.id, self.exact_len, self.fuzzy_len))
 
 
-class LrbNegativeWord(QThread):
-    __excel_path: str = ''
-    __username: str = ''
-    __password: str = ''
-    excel: Excel = None
-    item: Item = None
-    edge: WebDriver = None
-    msg = pyqtSignal(str)
-
-    def __init__(self, excel_path, username, password):
-        super().__init__()
-        self.__excel_path = excel_path
-        self.__username = username
-        self.__password = password
-
-    # noinspection PyUnresolvedReferences
-    def __emit(self, k, *p):
-        msg = log.msg(k, *p)
-        self.msg.emit(msg)
+class LrbNegativeWord(Lrb):
 
     def __read_excel(self):
-        xlsx = openpyxl.load_workbook(self.__excel_path)
+        xlsx = openpyxl.load_workbook(self._excel_path)
         active = xlsx.active
         max_row = active.max_row
         max_column = active.max_column
-        self.__emit('读取excel最大行数：{}，最大列数：{}', max_row, max_column)
+        self._emit('读取excel最大行数：{}，最大列数：{}', max_row, max_column)
 
         items = []
         for j in range(1, max_row + 1):
@@ -67,8 +46,8 @@ class LrbNegativeWord(QThread):
             item = Item(j, active.cell(row=j, column=1).value,
                         active.cell(row=j, column=2).value, active.cell(row=j, column=3).value)
             items.append(item)
-        self.__emit('共读取待添加否定词记录 {}条', len(items))
-        self.excel = Excel(self.__excel_path, xlsx, active, max_row, max_column, items)
+        self._emit('共读取待添加否定词记录 {}条', len(items))
+        self.excel = Excel(self._excel_path, xlsx, active, max_row, max_column, items)
 
     def __add_word(self):
         retry = 3
@@ -185,52 +164,24 @@ class LrbNegativeWord(QThread):
         self.item.exact_len = len(exact_words)
         self.item.fuzzy_len = len(fuzzy_words)
 
-    def exec(self):
-        self.__read_excel()
-        self.edge = util.unit_page(False, self.__username, self.__password)
-
-        size = len(self.excel.lines)
-        success = 0
-        failure = 0
-        result = ''
-        start = time.perf_counter()
-
-        for i in range(0, size):
-            self.item = self.excel.lines[i]
-            try:
-                is_added = self.__add_word()
-                note = '否定词已添加' if is_added else '否定词添加成功'
-                self.__emit('{} => {}：{}', log.loop_msg(i + 1, size, start), note, self.item.to_string())
-
-            except BaseException as e:
-                traceback.print_exc()
-                failure += 1
-                result = 'failure:' + repr(e)
-                self.__emit('{} => 添加否定词异常：{} => {}', log.loop_msg(i + 1, size, start), result, self.item.to_string())
-
-                self.edge.quit()
-                self.edge = util.unit_page(True, self.__username, self.__password)
-            else:
-                success += 1
-                result = 'success-added' if is_added else 'success'
-                time.sleep(0.5)
-            finally:
-                start = time.perf_counter()
-                self.excel.active.cell(row=self.item.row, column=4, value=result)
-                self.excel.xlsx.save(self.excel.path)
-
-        self.__emit('添加否定词任务完成，成功{}条，失败{}条', success, failure)
-        self.edge.quit()
+    def begin(self):
+        super().execute(
+            '添加否定词',
+            self.__read_excel,
+            util.unit_page,
+            self.__add_word,
+            4
+        )
 
 
 def main():
+    filepath = 'C:\\Users\\Magese\\Desktop\\批量否词需求.xlsx'
     username = ''
     password = ''
-    filepath = 'C:\\Users\\Magese\\Desktop\\批量否词需求.xlsx'
     lnw = LrbNegativeWord(filepath, username, password)
     # noinspection PyUnresolvedReferences
     lnw.msg.connect(lambda m: print(m))
-    lnw.exec()
+    lnw.begin()
 
 
 if __name__ == '__main__':
