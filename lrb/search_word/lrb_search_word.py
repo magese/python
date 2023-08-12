@@ -2,6 +2,7 @@ import time
 
 import openpyxl
 from selenium.common import StaleElementReferenceException
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from lrb.common import util
@@ -67,6 +68,7 @@ class LrbSearchWord(Lrb):
 
                 word_input.send_keys('')
                 word_input.clear()
+                word_input.send_keys(Keys.CONTROL, 'a')
                 word_input.send_keys(self.item.word)
                 time.sleep(1)
 
@@ -122,13 +124,17 @@ class LrbSearchWord(Lrb):
         self.item.fuzzy_len = len(fuzzy_words)
 
     def run(self):
-        super().execute(
-            '修改搜索词',
-            self.__read_excel,
-            util.creative_page,
-            self.__modify_word,
-            4
-        )
+        try:
+            super().execute(
+                '修改搜索词',
+                self.__read_excel,
+                util.creative_page,
+                self.__modify_word,
+                4
+            )
+        except BaseException as e:
+            self._emit('发生未知异常，错误信息：{}', repr(e))
+            self._err('发生未知异常，错误信息：{}', repr(e))
 
 
 def main():

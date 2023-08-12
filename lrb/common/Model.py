@@ -33,6 +33,7 @@ class Lrb(QThread):
     edge: WebDriver = None
     stop_status: int = 0
     msg = pyqtSignal(str)
+    err = pyqtSignal(str)
     status = pyqtSignal(int)
     value_changed = pyqtSignal(float)
 
@@ -41,13 +42,31 @@ class Lrb(QThread):
         msg = log.msg(k, *p)
         self.msg.emit(msg)
 
+    # noinspection PyUnresolvedReferences
+    def _err(self, k, *p):
+        msg = log.msg(k, *p)
+        self.err.emit(msg)
+
     def __read_excel(self):
         pass
 
     # noinspection PyUnresolvedReferences
     def execute(self, action, read_func, page_func, do_func, res_column):
-        read_func()
-        self.edge = page_func(False, self._username, self._password)
+        try:
+            read_func()
+        except BaseException as e:
+            traceback.print_exc()
+            self._emit('读取Excel异常，请确认文件格式是否正确。错误信息：{}', repr(e))
+            self._err('读取Excel异常，请确认文件格式是否正确。错误信息：{}', repr(e))
+            return
+
+        try:
+            self.edge = page_func(False, self._username, self._password)
+        except BaseException as e:
+            traceback.print_exc()
+            self._emit('打开Edge浏览器失败，请检查驱动。错误信息：{}', repr(e))
+            self._err('打开Edge浏览器失败，请检查驱动。错误信息：{}', repr(e))
+            return
 
         size = len(self.excel.lines)
         success = 0

@@ -2,6 +2,7 @@ import time
 
 import openpyxl
 from selenium.common import StaleElementReferenceException
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from lrb.common import util
@@ -71,6 +72,8 @@ class LrbLink(Lrb):
         link_input = util.wait_for_find_ele(
             lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), self.edge)
         link_input.clear()
+        link_input.send_keys('')
+        link_input.send_keys(Keys.CONTROL, 'a')
         link_input.send_keys(self.item.link)
 
         save_btn = util.wait_for_find_ele(
@@ -86,13 +89,17 @@ class LrbLink(Lrb):
         self.edge.switch_to.window(self.edge.window_handles[0])
 
     def run(self):
-        super().execute(
-            '监测链接修改',
-            self.__read_excel,
-            util.creative_page,
-            self.__change_link,
-            3
-        )
+        try:
+            super().execute(
+                '监测链接修改',
+                self.__read_excel,
+                util.creative_page,
+                self.__change_link,
+                3
+            )
+        except BaseException as e:
+            self._emit('发生未知异常，错误信息：{}', repr(e))
+            self._err('发生未知异常，错误信息：{}', repr(e))
 
 
 def main():

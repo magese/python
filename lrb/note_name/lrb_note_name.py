@@ -2,6 +2,7 @@ import time
 
 import openpyxl
 from selenium.common import StaleElementReferenceException
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
 from lrb.common import util
@@ -71,6 +72,7 @@ class LrbNoteName(Lrb):
 
         name_input.send_keys('')
         name_input.clear()
+        name_input.send_keys(Keys.CONTROL, 'a')
         name_input.send_keys(self.item.name)
         time.sleep(0.5)
 
@@ -83,13 +85,17 @@ class LrbNoteName(Lrb):
         return False
 
     def run(self):
-        super().execute(
-            '名称修改',
-            self.__read_excel,
-            util.creative_page,
-            self.__change_note_name,
-            3
-        )
+        try:
+            super().execute(
+                '名称修改',
+                self.__read_excel,
+                util.creative_page,
+                self.__change_note_name,
+                3
+            )
+        except BaseException as e:
+            self._emit('发生未知异常，错误信息：{}', repr(e))
+            self._err('发生未知异常，错误信息：{}', repr(e))
 
 
 # main

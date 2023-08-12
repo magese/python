@@ -65,13 +65,17 @@ class LrbPause(Lrb):
         return is_paused
 
     def run(self):
-        super().execute(
-            '暂停笔记',
-            self.__read_excel,
-            util.unit_page,
-            self.__pause_note,
-            2
-        )
+        try:
+            super().execute(
+                '暂停笔记',
+                self.__read_excel,
+                util.unit_page,
+                self.__pause_note,
+                2
+            )
+        except BaseException as e:
+            self._emit('发生未知异常，错误信息：{}', repr(e))
+            self._err('发生未知异常，错误信息：{}', repr(e))
 
 
 # main

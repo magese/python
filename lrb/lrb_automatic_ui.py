@@ -80,30 +80,35 @@ class LrbAutomaticUI(QMainWindow):
         self._link.value_changed.connect(lambda v: self.progress_bar.setValue(int(v * 1000)))
         self._link.status.connect(self.status)
         self._link.msg.connect(lambda m: self.log(m))
+        self._link.err.connect(lambda m: QMessageBox.warning(self, '错误', m))
         self._link.finished.connect(self.finish)
 
         self._name = LrbNoteName()
         self._name.value_changed.connect(lambda v: self.progress_bar.setValue(int(v * 1000)))
         self._name.status.connect(self.status)
         self._name.msg.connect(lambda m: self.log(m))
+        self._name.err.connect(lambda m: QMessageBox.warning(self, '错误', m))
         self._name.finished.connect(self.finish)
 
         self._search = LrbSearchWord()
         self._search.value_changed.connect(lambda v: self.progress_bar.setValue(int(v * 1000)))
         self._search.status.connect(self.status)
         self._search.msg.connect(lambda m: self.log(m))
+        self._search.err.connect(lambda m: QMessageBox.warning(self, '错误', m))
         self._search.finished.connect(self.finish)
 
         self._negative = LrbNegativeWord()
         self._negative.value_changed.connect(lambda v: self.progress_bar.setValue(int(v * 1000)))
         self._negative.status.connect(self.status)
         self._negative.msg.connect(lambda m: self.log(m))
+        self._negative.err.connect(lambda m: QMessageBox.warning(self, '错误', m))
         self._negative.finished.connect(self.finish)
 
         self._pause = LrbPause()
         self._pause.value_changed.connect(lambda v: self.progress_bar.setValue(int(v * 1000)))
         self._pause.status.connect(self.status)
         self._pause.msg.connect(lambda m: self.log(m))
+        self._pause.err.connect(lambda m: QMessageBox.warning(self, '错误', m))
         self._pause.finished.connect(self.finish)
 
         w = QWidget()
@@ -138,7 +143,7 @@ class LrbAutomaticUI(QMainWindow):
 
         self.logger = QTextEdit(self)
         self.logger.setReadOnly(True)
-        self.logger.setMinimumHeight(200)
+        self.logger.setMinimumHeight(300)
         self.logger.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
         self.logger.textChanged.connect(self.scroll_to_end)
         self.logger.viewport().setCursor(Qt.CursorShape.ArrowCursor)
@@ -185,7 +190,7 @@ class LrbAutomaticUI(QMainWindow):
 
         w.setLayout(grid)
         w.setMinimumWidth(500)
-        self.setGeometry(300, 300, 750, 100)
+        self.setGeometry(300, 300, 900, 100)
 
         self.trans_icon()
         self.setWindowIcon(self.icon)
@@ -253,6 +258,12 @@ class LrbAutomaticUI(QMainWindow):
         excel_text = self.excel_edit.text()
         if len(excel_text) == 0:
             QMessageBox.warning(self, '警告', '请先选择待处理excel文件及保存路径后再开始运行！')
+            return
+        if len(self.username_edit.text()) == 0:
+            QMessageBox.warning(self, '警告', '请先输入用户名后再开始运行！')
+            return
+        if len(self.password_edit.text()) == 0:
+            QMessageBox.warning(self, '警告', '请先输入密码后再开始运行！')
             return
 
         self._thread._excel_path = self.excel_edit.text()
