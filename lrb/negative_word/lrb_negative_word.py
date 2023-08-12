@@ -156,7 +156,7 @@ class LrbNegativeWord(Lrb):
         self.item.exact_len = len(exact_words)
         self.item.fuzzy_len = len(fuzzy_words)
 
-    def begin(self):
+    def run(self):
         super().execute(
             '添加否定词',
             self.__read_excel,
@@ -167,13 +167,13 @@ class LrbNegativeWord(Lrb):
 
 
 def main():
-    filepath = 'C:\\Users\\Magese\\Desktop\\批量否词需求.xlsx'
-    username = ''
-    password = ''
-    lnw = LrbNegativeWord(filepath, username, password)
+    lnw = LrbNegativeWord()
+    lnw._excel = r'C:\Users\mages\Desktop\批量否词需求.xlsx'
+    lnw._username = ''
+    lnw._password = ''
     # noinspection PyUnresolvedReferences
     lnw.msg.connect(lambda m: print(m))
-    lnw.begin()
+    lnw.run()
 
 
 if __name__ == '__main__':

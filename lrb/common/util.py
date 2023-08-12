@@ -29,14 +29,17 @@ def wait_for_find_ele(func, edge):
         time.sleep(0.3)
 
 
-def search_id(id, edge):
+def search_id(_id, edge):
     manage = wait_for_find_ele(
         lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
     id_input = wait_for_find_ele(
         lambda d: manage.find_element(by=By.TAG_NAME, value="input"), edge)
+    time.sleep(0.3)
     id_input.send_keys('')
     id_input.clear()
-    id_input.send_keys(id)
+    id_input.send_keys(Keys.CONTROL, 'a')
+    time.sleep(0.3)
+    id_input.send_keys(_id)
     id_input.send_keys(Keys.ENTER)
 
 

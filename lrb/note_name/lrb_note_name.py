@@ -82,7 +82,7 @@ class LrbNoteName(Lrb):
         self.edge.switch_to.window(self.edge.window_handles[0])
         return False
 
-    def begin(self):
+    def run(self):
         super().execute(
             '名称修改',
             self.__read_excel,
@@ -94,13 +94,13 @@ class LrbNoteName(Lrb):
 
 # main
 def main():
-    filepath = r'C:\Users\Magese\Desktop\创意名称修改.xlsx'
-    username = ''
-    password = ''
-    lnn = LrbNoteName(filepath, username, password)
+    lnn = LrbNoteName()
+    lnn._excel = r'C:\Users\mages\Desktop\创意名称修改.xlsx'
+    lnn._username = ''
+    lnn._password = ''
     # noinspection PyUnresolvedReferences
     lnn.msg.connect(lambda m: print(m))
-    lnn.begin()
+    lnn.run()
 
 
 if __name__ == '__main__':

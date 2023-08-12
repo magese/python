@@ -121,7 +121,7 @@ class LrbSearchWord(Lrb):
         self.item.exact_len = len(exact_words)
         self.item.fuzzy_len = len(fuzzy_words)
 
-    def begin(self):
+    def run(self):
         super().execute(
             '修改搜索词',
             self.__read_excel,
@@ -132,13 +132,13 @@ class LrbSearchWord(Lrb):
 
 
 def main():
-    filepath = 'C:\\Users\\Magese\\Desktop\\批量否词需求.xlsx'
-    username = ''
-    password = ''
-    lsw = LrbSearchWord(filepath, username, password)
+    lsw = LrbSearchWord()
+    lsw._excel = 'C:\\Users\\Magese\\Desktop\\批量否词需求.xlsx'
+    lsw._username = ''
+    lsw._password = ''
     # noinspection PyUnresolvedReferences
     lsw.msg.connect(lambda m: print(m))
-    lsw.begin()
+    lsw.run()
 
 
 if __name__ == '__main__':

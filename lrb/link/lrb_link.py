@@ -85,7 +85,7 @@ class LrbLink(Lrb):
         self.edge.close()
         self.edge.switch_to.window(self.edge.window_handles[0])
 
-    def begin(self):
+    def run(self):
         super().execute(
             '监测链接修改',
             self.__read_excel,
@@ -96,13 +96,13 @@ class LrbLink(Lrb):
 
 
 def main():
-    filepath = r'C:\Users\mages\Desktop\创意id+监测链接.xlsx'
-    username = ''
-    password = ''
-    ll = LrbLink(filepath, username, password)
+    ll = LrbLink()
+    ll._excel = r'C:\Users\mages\Desktop\创意id+监测链接.xlsx'
+    ll._username = ''
+    ll._password = ''
     # noinspection PyUnresolvedReferences
     ll.msg.connect(lambda m: print(m))
-    ll.begin()
+    ll.run()
 
 
 if __name__ == '__main__':

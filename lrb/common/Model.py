@@ -31,13 +31,10 @@ class Lrb(QThread):
     excel: Excel = None
     item = None
     edge: WebDriver = None
+    stop_status: int = 0
     msg = pyqtSignal(str)
-
-    def __init__(self, excel_path, username, password):
-        super().__init__()
-        self._excel_path = excel_path
-        self._username = username
-        self._password = password
+    status = pyqtSignal(int)
+    value_changed = pyqtSignal(float)
 
     # noinspection PyUnresolvedReferences
     def _emit(self, k, *p):
@@ -58,6 +55,31 @@ class Lrb(QThread):
         start = time.perf_counter()
 
         for i in range(0, size):
+            break_flag = False
+
+            if self.stop_status == 1:
+                self.value_changed.emit(0)
+                self.status.emit(1)
+                self._emit('停止执行')
+                break
+            elif self.stop_status == 2:
+                self.status.emit(2)
+                self._emit('暂停执行')
+                while True:
+                    if self.stop_status == 0:
+                        self.status.emit(0)
+                        self._emit('继续执行')
+                        break
+                    elif self.stop_status == 1:
+                        break_flag = True
+                        break
+                    elif self.stop_status == 2:
+                        time.sleep(0.1)
+            if break_flag:
+                self._emit('停止执行')
+                self.status.emit(1)
+                break
+
             self.item = self.excel.lines[i]
             try:
                 flag = do_func()
@@ -72,7 +94,7 @@ class Lrb(QThread):
                            log.loop_msg(i + 1, size, start), action, result, self.item.to_string())
 
                 self.edge.quit()
-                self.edge = page_func
+                self.edge = page_func(False, self._username, self._password)
             else:
                 success += 1
                 result = 'success-completed' if flag else 'success'
@@ -81,6 +103,7 @@ class Lrb(QThread):
                 start = time.perf_counter()
                 self.excel.active.cell(row=self.item.row, column=res_column, value=result)
                 self.excel.xlsx.save(self.excel.path)
+                self.value_changed.emit((i + 1) / size)
 
         self._emit('{}任务完成，成功{}条，失败{}条', action, success, failure)
         self.edge.quit()
