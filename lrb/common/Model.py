@@ -44,6 +44,7 @@ class Lrb(QThread):
     def __read_excel(self):
         pass
 
+    # noinspection PyUnresolvedReferences
     def execute(self, action, read_func, page_func, do_func, res_column):
         read_func()
         self.edge = page_func(False, self._username, self._password)
