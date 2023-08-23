@@ -69,7 +69,7 @@ class LrbPause(Lrb):
             super().execute(
                 '暂停笔记',
                 self.__read_excel,
-                util.unit_page,
+                util.creative_page,
                 self.__pause_note,
                 2
             )
@@ -82,7 +82,7 @@ class LrbPause(Lrb):
 # noinspection PyUnresolvedReferences
 def main():
     lp = LrbPause()
-    lp._excel = 'C:\\Users\\mages\\Desktop\\暂停创意id.xlsx'
+    lp._excel = r'C:\\Users\mages\Desktop\暂停创意id.xlsx'
     lp._username = ''
     lp._password = ''
     lp.msg.connect(lambda m: print(m))
