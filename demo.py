@@ -1,11 +1,16 @@
-import base64
-import os
+def tuple_test(first, *second):
+    if second:
+        print(True)
+        print(float(second[0]))
+    else:
+        print(False)
+    print(first)
+    print(second)
 
 
-def trans_base64_1(file_path):
-    with open(file_path, "rb") as f:
-        return str(base64.b64encode(f.read()))[2:-1]
+tuple_test('magese', 3.14)
+print('-------------')
+tuple_test('magese', 3.14, 0.003)
+print('-------------')
+tuple_test('zora')
 
-
-filepath = r'C:\Users\mages\Desktop\favicon.ico'
-print(os.path.abspath(os.path.dirname(__file__)))

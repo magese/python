@@ -104,7 +104,7 @@ class LrbLink(Lrb):
 
 def main():
     ll = LrbLink()
-    ll._excel = r'C:\Users\mages\Desktop\创意id+监测链接.xlsx'
+    ll._excel_path = r'C:\Users\mages\Desktop\创意id+监测链接.xlsx'
     ll._username = ''
     ll._password = ''
     # noinspection PyUnresolvedReferences

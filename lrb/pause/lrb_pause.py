@@ -82,7 +82,7 @@ class LrbPause(Lrb):
 # noinspection PyUnresolvedReferences
 def main():
     lp = LrbPause()
-    lp._excel = r'C:\\Users\mages\Desktop\暂停创意id.xlsx'
+    lp._excel_path = r'C:\Users\mages\Desktop\暂停创意id.xlsx'
     lp._username = ''
     lp._password = ''
     lp.msg.connect(lambda m: print(m))

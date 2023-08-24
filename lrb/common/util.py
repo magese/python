@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from selenium import webdriver
-from selenium.common import TimeoutException, StaleElementReferenceException
+from selenium.common import TimeoutException, StaleElementReferenceException, ElementNotInteractableException
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
@@ -17,12 +17,16 @@ def open_browser():
     return webdriver.Edge(options=options)
 
 
-def wait_for_find_ele(func, edge):
+def wait_for_find_ele(func, edge, *timeout):
     retry_time = 3
+    if timeout:
+        timeout = float(timeout[0])
+    else:
+        timeout = 10
 
     while retry_time > 0:
         try:
-            return WebDriverWait(edge, timeout=10).until(func)
+            return WebDriverWait(edge, timeout=timeout).until(func)
         except StaleElementReferenceException:
             log.info('retry wait for find elements!')
             retry_time -= 1
@@ -30,25 +34,39 @@ def wait_for_find_ele(func, edge):
 
 
 def search_id(_id, edge):
-    manage = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
-    id_input = wait_for_find_ele(
-        lambda d: manage.find_element(by=By.TAG_NAME, value="input"), edge)
-    time.sleep(0.3)
-    id_input.send_keys('')
-    id_input.clear()
-    id_input.send_keys(Keys.CONTROL, 'a')
-    time.sleep(0.3)
-    id_input.send_keys(_id)
-    id_input.send_keys(Keys.ENTER)
+    retry = 3
+    while retry > 0:
+        try:
+            manage = wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), edge)
+            id_input = wait_for_find_ele(
+                lambda d: manage.find_element(by=By.TAG_NAME, value="input"), edge)
+            time.sleep(0.3)
+            id_input.send_keys('')
+            id_input.clear()
+            id_input.send_keys(Keys.CONTROL, 'a')
+            time.sleep(0.3)
+            id_input.send_keys(_id)
+            id_input.send_keys(Keys.ENTER)
+            break
+        except (ElementNotInteractableException, StaleElementReferenceException):
+            retry -= 1
+            time.sleep(0.5)
 
 
 def click_edit(edge):
-    edit_div = wait_for_find_ele(
-        lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
-    edit_a = wait_for_find_ele(
-        lambda d: edit_div.find_elements(by=By.TAG_NAME, value="a"), edge)
-    edit_a[0].click()
+    retry = 3
+    while retry > 0:
+        try:
+            edit_div = wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="css-ece9u5"), edge)
+            edit_a = wait_for_find_ele(
+                lambda d: edit_div.find_elements(by=By.TAG_NAME, value="a"), edge)
+            edit_a[0].click()
+            break
+        except (ElementNotInteractableException, StaleElementReferenceException):
+            retry -= 1
+            time.sleep(0.5)
 
 
 def login(username, password, edge):

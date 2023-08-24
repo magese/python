@@ -139,7 +139,7 @@ class LrbSearchWord(Lrb):
 
 def main():
     lsw = LrbSearchWord()
-    lsw._excel = r'C:\Users\Magese\Desktop\批量否词需求.xlsx'
+    lsw._excel_path = r'C:\Users\Magese\Desktop\批量否词需求.xlsx'
     lsw._username = ''
     lsw._password = ''
     # noinspection PyUnresolvedReferences

@@ -101,7 +101,7 @@ class LrbNoteName(Lrb):
 # main
 def main():
     lnn = LrbNoteName()
-    lnn._excel = r'C:\Users\mages\Desktop\创意名称修改.xlsx'
+    lnn._excel_path = r'C:\Users\mages\Desktop\创意名称修改.xlsx'
     lnn._username = ''
     lnn._password = ''
     # noinspection PyUnresolvedReferences
