@@ -1,7 +1,7 @@
 import time
 
 import openpyxl
-from selenium.common import StaleElementReferenceException
+from selenium.common import StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 
 from lrb.common import util
@@ -49,13 +49,12 @@ class LrbNegativeWord(Lrb):
         self.excel = Excel(self._excel_path, xlsx, active, max_row, max_column, items)
 
     def __add_word(self):
+        util.search_id(self.item.id, self.edge)
+        time.sleep(1.2)
+
         retry = 3
-        is_add = False
         while retry > 0:
             try:
-                util.search_id(self.item.id, self.edge)
-                time.sleep(1.2)
-
                 tbody = util.wait_for_find_ele(
                     lambda d: d.find_element(by=By.CLASS_NAME, value="d-table__body"), self.edge)
                 tr = util.wait_for_find_ele(
@@ -66,57 +65,70 @@ class LrbNegativeWord(Lrb):
                     lambda d: td[2].find_element(by=By.TAG_NAME, value="a"), self.edge)
                 a.click()
                 time.sleep(1.2)
+                break
+            except StaleElementReferenceException:
+                retry -= 1
+                time.sleep(0.5)
 
+        retry = 3
+        while retry > 0:
+            try:
                 tabs_headers = util.wait_for_find_ele(
                     lambda d: d.find_element(by=By.CLASS_NAME, value="d-tabs-headers-linear"), self.edge)
                 tabs = util.wait_for_find_ele(
                     lambda d: tabs_headers.find_elements(by=By.CLASS_NAME, value="d-tabs-header-linear"), self.edge)
                 tabs[2].click()
                 time.sleep(1)
-
-                self.__de_duplicate()
-                if self.item.exact_len <= 0 and self.item.fuzzy_len <= 0:
-                    is_add = True
-                    break
-
-                manage = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), self.edge)
-                btn = util.wait_for_find_ele(
-                    lambda d: manage.find_elements(by=By.TAG_NAME, value="button"), self.edge)
-                btn[0].click()
-                time.sleep(0.5)
-
-                radios = util.wait_for_find_ele(
-                    lambda d: d.find_elements(by=By.CLASS_NAME, value="css-1b8lkqj"), self.edge)
-                textarea = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="css-fx13em")
-                    .find_element(by=By.TAG_NAME, value="textarea"), self.edge)
-                # cancel_btn = util.wait_for_find_ele(
-                #     lambda d: d.find_element(by=By.CLASS_NAME, value="css-fm44j"), self.edge)
-                save_btn = util.wait_for_find_ele(
-                    lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), self.edge)
-
-                if self.item.exact_len > 0:
-                    radios[0].click()
-                    textarea.clear()
-                    textarea.send_keys(self.item.exact_word)
-                    time.sleep(1)
-                    save_btn.click()
-
-                if self.item.fuzzy_len > 0:
-                    radios[1].click()
-                    textarea.clear()
-                    textarea.send_keys(self.item.fuzzy_word)
-                    time.sleep(1)
-                    save_btn.click()
-
-                time.sleep(1)
-                util.switch_unit_id_page(self.edge)
                 break
             except StaleElementReferenceException:
                 retry -= 1
                 time.sleep(0.5)
-        return is_add
+
+        self.__de_duplicate()
+        if self.item.exact_len == 0 and self.item.fuzzy_len == 0:
+            time.sleep(1)
+            util.switch_unit_id_page(self.edge)
+            return True
+
+        if self.item.exact_len > 0:
+            self.__do_add(self.item.exact_word, 0)
+
+        if self.item.fuzzy_len > 0:
+            self.__do_add(self.item.fuzzy_word, 1)
+
+        util.switch_unit_id_page(self.edge)
+
+        return False
+
+    def __do_add(self, words, radio_idx):
+        manage = util.wait_for_find_ele(
+            lambda d: d.find_element(by=By.CLASS_NAME, value="manage-list"), self.edge)
+        btn = util.wait_for_find_ele(
+            lambda d: manage.find_elements(by=By.TAG_NAME, value="button"), self.edge)
+        btn[0].click()
+        time.sleep(0.5)
+
+        radios = util.wait_for_find_ele(
+            lambda d: d.find_elements(by=By.CLASS_NAME, value="css-1b8lkqj"), self.edge)
+        textarea = util.wait_for_find_ele(
+            lambda d: d.find_element(by=By.CLASS_NAME, value="css-fx13em")
+            .find_element(by=By.TAG_NAME, value="textarea"), self.edge)
+        save_btn = util.wait_for_find_ele(
+            lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), self.edge)
+
+        radios[radio_idx].click()
+        textarea.clear()
+        textarea.send_keys(words)
+        time.sleep(1)
+        save_btn.click()
+        time.sleep(1)
+
+        try:
+            cancel_btn = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="css-fm44j"), self.edge, 1)
+            cancel_btn.click()
+        except TimeoutException:
+            pass
 
     def __de_duplicate(self):
         tbody = util.wait_for_find_ele(
@@ -126,17 +138,17 @@ class LrbNegativeWord(Lrb):
         if len(tr) < 2:
             return
 
-        page_select = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="d-select-main-indicator"), self.edge)
-        page_select.click()
-        time.sleep(0.5)
-
-        dropdown = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="d-dropdown-content"), self.edge)
-        grid_item = util.wait_for_find_ele(
-            lambda d: dropdown.find_elements(by=By.CLASS_NAME, value="d-grid-item"), self.edge)
-        grid_item[len(grid_item) - 1].click()
-        time.sleep(1)
+        # page_select = util.wait_for_find_ele(
+        #     lambda d: d.find_element(by=By.CLASS_NAME, value="d-select-main-indicator"), self.edge)
+        # page_select.click()
+        # time.sleep(0.5)
+        #
+        # dropdown = util.wait_for_find_ele(
+        #     lambda d: d.find_element(by=By.CLASS_NAME, value="d-dropdown-content"), self.edge)
+        # grid_item = util.wait_for_find_ele(
+        #     lambda d: dropdown.find_elements(by=By.CLASS_NAME, value="d-grid-item"), self.edge)
+        # grid_item[len(grid_item) - 1].click()
+        # time.sleep(1)
         tr = util.wait_for_find_ele(
             lambda d: tbody.find_elements(by=By.TAG_NAME, value="tr"), self.edge)
 
@@ -172,7 +184,7 @@ class LrbNegativeWord(Lrb):
 
 def main():
     lnw = LrbNegativeWord()
-    lnw._excel = r'C:\Users\mages\Desktop\批量否词需求.xlsx'
+    lnw._excel_path = r'C:\Users\Magese\Desktop\批量否词需求.xlsx'
     lnw._username = ''
     lnw._password = ''
     # noinspection PyUnresolvedReferences
