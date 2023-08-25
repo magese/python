@@ -46,6 +46,19 @@ class LrbNoteName(Lrb):
         util.search_id(self.item.id, self.edge)
         time.sleep(1.2)
 
+        tbody = util.wait_for_find_ele(
+            lambda d: d.find_element(by=By.CLASS_NAME, value="d-table__body"), self.edge)
+        tr = util.wait_for_find_ele(
+            lambda d: tbody.find_elements(by=By.TAG_NAME, value="tr"), self.edge)
+        td = util.wait_for_find_ele(
+            lambda d: tr[0].find_elements(by=By.TAG_NAME, value="td"), self.edge)
+        span = util.wait_for_find_ele(
+            lambda d: td[3].find_element(by=By.TAG_NAME, value="span"), self.edge)
+        creative_name = span.get_attribute('innerText')
+        if self.item.name == creative_name:
+            time.sleep(0.5)
+            return True
+
         edit_retry = 3
         while edit_retry > 0:
             try:
@@ -101,7 +114,7 @@ class LrbNoteName(Lrb):
 # main
 def main():
     lnn = LrbNoteName()
-    lnn._excel_path = r'C:\Users\mages\Desktop\创意名称修改.xlsx'
+    lnn._excel_path = r'C:\Users\Magese\Desktop\创意名称修改.xlsx'
     lnn._username = ''
     lnn._password = ''
     # noinspection PyUnresolvedReferences
