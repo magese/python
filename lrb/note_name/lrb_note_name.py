@@ -35,7 +35,7 @@ class LrbNoteName(Lrb):
 
         items = []
         for j in range(1, max_row + 1):
-            if active.cell(row=j, column=3).value == 'success':
+            if str(active.cell(row=j, column=3).value).startswith('success'):
                 continue
             item = Item(j, active.cell(row=j, column=1).value, active.cell(row=j, column=2).value)
             items.append(item)
