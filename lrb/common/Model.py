@@ -113,7 +113,8 @@ class Lrb(QThread):
                 self._emit('{} => {}异常：{} => {}',
                            log.loop_msg(i + 1, size, start), action, result, self.item.to_string())
 
-                self.edge.quit()
+                if self.edge:
+                    self.edge.quit()
                 self.edge = page_func(False, self._username, self._password)
             else:
                 success += 1

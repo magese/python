@@ -1,3 +1,4 @@
+import os
 import traceback
 
 import openpyxl
@@ -27,7 +28,6 @@ class Item:
 
 class ExcelImage(Lrb):
     CHARACTER_WIDTH = 6
-    _img_dir = ''
 
     def __read_excel(self):
         xlsx = openpyxl.load_workbook(self._excel_path)
@@ -59,7 +59,7 @@ class ExcelImage(Lrb):
         column_pixels = points_to_pixels(column_width * self.CHARACTER_WIDTH) - 10
         row_pixels = points_to_pixels(row_height) - 10
 
-        image_path = f'{self._img_dir}{self.item.img_name}'
+        image_path = f'{os.path.abspath(os.path.join(self._excel_path, os.pardir))}\\{self.item.img_name}'
         img = Image(image_path)
 
         img_height = img.height
@@ -105,7 +105,6 @@ class ExcelImage(Lrb):
 def main():
     ei = ExcelImage()
     ei._excel_path = r'C:\Users\Magese\Desktop\addimg\【每日更新】LRB SEM post －test.xlsx'
-    ei._img_dir = r'C:\Users\Magese\Desktop\addimg\imgs\\'
     # noinspection PyUnresolvedReferences
     ei.msg.connect(lambda m: print(m))
     ei.run()
