@@ -171,11 +171,12 @@ class LrbNegativeWord(Lrb):
     def run(self):
         try:
             super().execute(
-                '添加否定词',
-                self.__read_excel,
-                util.unit_page,
-                self.__add_word,
-                4
+                action='添加否定词',
+                read_func=self.__read_excel,
+                page_func=util.unit_page,
+                do_func=self.__add_word,
+                end_func=None,
+                res_column=4
             )
         except BaseException as e:
             self._emit('发生未知异常，错误信息：{}', repr(e))

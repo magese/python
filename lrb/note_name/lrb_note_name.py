@@ -100,11 +100,12 @@ class LrbNoteName(Lrb):
     def run(self):
         try:
             super().execute(
-                '名称修改',
-                self.__read_excel,
-                util.creative_page,
-                self.__change_note_name,
-                3
+                action='名称修改',
+                read_func=self.__read_excel,
+                page_func=util.creative_page,
+                do_func=self.__change_note_name,
+                end_func=None,
+                res_column=3
             )
         except BaseException as e:
             self._emit('发生未知异常，错误信息：{}', repr(e))

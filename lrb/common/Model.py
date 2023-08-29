@@ -51,7 +51,7 @@ class Lrb(QThread):
         pass
 
     # noinspection PyUnresolvedReferences
-    def execute(self, action, read_func, page_func, do_func, res_column):
+    def execute(self, action, read_func, page_func, do_func, end_func, res_column, interval_ms=0.5):
         try:
             read_func()
         except BaseException as e:
@@ -118,12 +118,16 @@ class Lrb(QThread):
             else:
                 success += 1
                 result = 'success-completed' if flag else 'success'
-                time.sleep(0.5)
+                time.sleep(interval_ms)
             finally:
                 start = time.perf_counter()
-                self.excel.active.cell(row=self.item.row, column=res_column, value=result)
-                self.excel.xlsx.save(self.excel.path)
+                if res_column >= 0:
+                    self.excel.active.cell(row=self.item.row, column=res_column, value=result)
+                    self.excel.xlsx.save(self.excel.path)
                 self.value_changed.emit((i + 1) / size)
 
+        if end_func:
+            end_func()
         self._emit('{}任务完成，成功{}条，失败{}条', action, success, failure)
-        self.edge.quit()
+        if self.edge:
+            self.edge.quit()

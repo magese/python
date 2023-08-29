@@ -126,11 +126,12 @@ class LrbSearchWord(Lrb):
     def run(self):
         try:
             super().execute(
-                '修改搜索词',
-                self.__read_excel,
-                util.creative_page,
-                self.__modify_word,
-                4
+                action='修改搜索词',
+                read_func=self.__read_excel,
+                page_func=util.creative_page,
+                do_func=self.__modify_word,
+                end_func=None,
+                res_column=4
             )
         except BaseException as e:
             self._emit('发生未知异常，错误信息：{}', repr(e))
