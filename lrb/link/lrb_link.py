@@ -66,16 +66,22 @@ class LrbLink(Lrb):
             lambda d: td[13].find_element(by=By.CLASS_NAME, value="link-text"), self.edge)
         change_btn.click()
 
+        monitor_link = util.wait_for_find_ele(
+            lambda d: d.find_element(by=By.CLASS_NAME, value="monitor-link-comp"), self.edge)
         try:
-            add_btn = util.wait_for_find_ele(
-                lambda d: d.find_element(by=By.CLASS_NAME, value="add-action"), self.edge, 1.5)
+            inputs = util.wait_for_find_ele(
+                lambda d: monitor_link.find_elements(by=By.TAG_NAME, value="input"), self.edge, 0.3)
         except TimeoutException:
+            inputs = []
+
+        if len(inputs) > 0:
             clear_btn = util.wait_for_find_ele(
                 lambda d: d.find_element(by=By.CLASS_NAME, value="css-1jjt3ne"), self.edge)
             clear_btn.click()
-            link_input = util.wait_for_find_ele(
-                lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), self.edge)
+            link_input = inputs[0]
         else:
+            add_btn = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="add-action"), self.edge)
             add_btn.click()
             link_wrapper = util.wait_for_find_ele(
                 lambda d: d.find_element(by=By.CLASS_NAME, value="css-kjywek"), self.edge)
@@ -119,8 +125,8 @@ class LrbLink(Lrb):
 def main():
     ll = LrbLink()
     ll._excel_path = r'C:\Users\mages\Desktop\创意id+监测链接.xlsx'
-    ll._username = 'skiicn_lrb2021@163.com'
-    ll._password = 'Mediacom12345'
+    ll._username = ''
+    ll._password = ''
     # noinspection PyUnresolvedReferences
     ll.msg.connect(lambda m: print(m))
     ll.run()
