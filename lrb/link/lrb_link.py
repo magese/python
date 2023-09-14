@@ -1,7 +1,7 @@
 import time
 
 import openpyxl
-from selenium.common import StaleElementReferenceException
+from selenium.common import StaleElementReferenceException, TimeoutException
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
@@ -66,11 +66,22 @@ class LrbLink(Lrb):
             lambda d: td[13].find_element(by=By.CLASS_NAME, value="link-text"), self.edge)
         change_btn.click()
 
-        clear_btn = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="css-1jjt3ne"), self.edge)
-        clear_btn.click()
-        link_input = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), self.edge)
+        try:
+            add_btn = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="add-action"), self.edge, 1.5)
+        except TimeoutException:
+            clear_btn = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="css-1jjt3ne"), self.edge)
+            clear_btn.click()
+            link_input = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="css-968ze5"), self.edge)
+        else:
+            add_btn.click()
+            link_wrapper = util.wait_for_find_ele(
+                lambda d: d.find_element(by=By.CLASS_NAME, value="css-kjywek"), self.edge)
+            link_input = util.wait_for_find_ele(
+                lambda d: link_wrapper.find_element(by=By.CLASS_NAME, value="css-1dbyz17"), self.edge)
+
         link_input.clear()
         link_input.send_keys('')
         link_input.send_keys(Keys.CONTROL, 'a')
@@ -81,9 +92,11 @@ class LrbLink(Lrb):
         save_btn.click()
         time.sleep(0.7)
 
-        finish_btn = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), self.edge)
-        finish_btn.click()
+        footer = util.wait_for_find_ele(
+            lambda d: d.find_element(by=By.CLASS_NAME, value="footer-action"), self.edge)
+        footer_btns = util.wait_for_find_ele(
+            lambda d: footer.find_elements(by=By.TAG_NAME, value="button"), self.edge)
+        footer_btns[1].click()
         time.sleep(1)
         self.edge.close()
         self.edge.switch_to.window(self.edge.window_handles[0])
@@ -106,8 +119,8 @@ class LrbLink(Lrb):
 def main():
     ll = LrbLink()
     ll._excel_path = r'C:\Users\mages\Desktop\创意id+监测链接.xlsx'
-    ll._username = ''
-    ll._password = ''
+    ll._username = 'skiicn_lrb2021@163.com'
+    ll._password = 'Mediacom12345'
     # noinspection PyUnresolvedReferences
     ll.msg.connect(lambda m: print(m))
     ll.run()
