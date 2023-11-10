@@ -31,22 +31,24 @@ class ExcelImage(Lrb):
 
     def __read_excel(self):
         xlsx = openpyxl.load_workbook(self._excel_path)
-        active = xlsx.active
-        max_row = active.max_row
-        max_column = active.max_column
-        self._emit('读取excel最大行数：{}，最大列数：{}', max_row, max_column)
-
+        sheets = xlsx.sheetnames
         items = []
-        for i in range(1, max_row + 1):
-            for j in range(1, max_column + 1):
-                cell = active.cell(row=i, column=j)
-                if str(cell.value).startswith('="<table>'):
-                    value = str(cell.value)
-                    coordinate = value[(value.index('"&') + 2):value.index('&"')]
-                    image_name = str(active[coordinate].value) + '.jpg'
-                    items.append(Item(_sheet=active, _cell=cell, _img_name=image_name, _coordinate=coordinate))
-        self._emit('共读取待插入图片单元格 {}个', len(items))
-        self.excel = Excel(self._excel_path, xlsx, active, max_row, max_column, items)
+        for sheet in sheets:
+            active = xlsx[sheet]
+            max_row = active.max_row
+            max_column = active.max_column
+            self._emit('读取excel，sheet名称：{}，最大行数：{}，最大列数：{}', sheet, max_row, max_column)
+
+            for i in range(1, max_row + 1):
+                for j in range(1, max_column + 1):
+                    cell = active.cell(row=i, column=j)
+                    if str(cell.value).startswith('="<table>'):
+                        value = str(cell.value)
+                        coordinate = value[(value.index('"&') + 2):value.index('&"')]
+                        image_name = str(active[coordinate].value) + '.jpg'
+                        items.append(Item(_sheet=active, _cell=cell, _img_name=image_name, _coordinate=coordinate))
+            self._emit('共读取待插入图片单元格 {}个', len(items))
+        self.excel = Excel(self._excel_path, xlsx, None, 0, 0, items)
 
     def __nothing(self, *p):
         pass
@@ -104,7 +106,7 @@ class ExcelImage(Lrb):
 
 def main():
     ei = ExcelImage()
-    ei._excel_path = r'C:\Users\Magese\Desktop\addimg\【每日更新】LRB SEM post －test.xlsx'
+    ei._excel_path = r'C:\Users\Magese\Desktop\screenshot\【每周更新】LRB SEM post weekly performance -1101-1106-笔记分类版.xlsx'
     # noinspection PyUnresolvedReferences
     ei.msg.connect(lambda m: print(m))
     ei.run()
