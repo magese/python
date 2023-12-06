@@ -86,7 +86,6 @@ class LrbScreenshot(QThread):
 
         try:
             drive = util.open_browser()
-            drive.maximize_window()
         except BaseException as e:
             traceback.print_exc()
             self.__log('打开Edge浏览器失败，请检查驱动。错误信息：{}', repr(e))
@@ -149,3 +148,17 @@ class LrbScreenshot(QThread):
             self.exec()
         except BaseException as e:
             self.__log('未知异常：' + repr(e))
+
+
+# main
+# noinspection PyUnresolvedReferences
+def main():
+    ls = LrbScreenshot()
+    ls.excel_path = r''
+    ls.save_dir = r''
+    ls.output.connect(lambda m: print(m))
+    ls.run()
+
+
+if __name__ == '__main__':
+    main()
