@@ -108,19 +108,20 @@ class LrbNegativeWord(Lrb):
         btn[0].click()
         time.sleep(0.5)
 
+        modal = util.wait_for_find_ele(
+            lambda d: d.find_elements(by=By.CLASS_NAME, value="d-modal"), self.edge)[0]
         radios = util.wait_for_find_ele(
-            lambda d: d.find_elements(by=By.CLASS_NAME, value="css-1b8lkqj"), self.edge)
+            lambda d: modal.find_elements(by=By.CLASS_NAME, value="d-radio-simulator"), self.edge)
         textarea = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="css-fx13em")
-            .find_element(by=By.TAG_NAME, value="textarea"), self.edge)
-        save_btn = util.wait_for_find_ele(
-            lambda d: d.find_element(by=By.CLASS_NAME, value="css-r7neow"), self.edge)
+            lambda d: modal.find_element(by=By.TAG_NAME, value="textarea"), self.edge)
+        btns = util.wait_for_find_ele(
+            lambda d: modal.find_elements(by=By.TAG_NAME, value="button"), self.edge)
 
         radios[radio_idx].click()
         textarea.clear()
         textarea.send_keys(words)
         time.sleep(1)
-        save_btn.click()
+        btns[1].click()
         time.sleep(1)
 
         try:
@@ -185,9 +186,9 @@ class LrbNegativeWord(Lrb):
 
 def main():
     lnw = LrbNegativeWord()
-    lnw._excel_path = r'C:\Users\Magese\Desktop\批量否词需求.xlsx'
-    lnw._username = ''
-    lnw._password = ''
+    lnw._excel_path = r'C:\Users\mages\Desktop\批量否词需求-1215-r.xlsx'
+    lnw._username = 'skiicn_lrb2021@163.com'
+    lnw._password = 'Mediacom12345'
     # noinspection PyUnresolvedReferences
     lnw.msg.connect(lambda m: print(m))
     lnw.run()

@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from PIL import Image
 
 from selenium import webdriver
 from selenium.common import TimeoutException, StaleElementReferenceException, ElementNotInteractableException
@@ -9,6 +10,13 @@ from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.wait import WebDriverWait
 
 from lrb.common import log
+
+
+def compress_image(input_image_path, output_image_path, quality):
+    image = Image.open(input_image_path)
+    if image.mode == 'RGBA':
+        image = image.convert('RGB')
+    image.save(output_image_path, optimize=True, quality=quality)
 
 
 def open_browser():

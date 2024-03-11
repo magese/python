@@ -60,6 +60,7 @@ class LrbScreenshot(QThread):
         img_data = base64.b64decode(base64_image)
         with open(file_path, 'wb') as f:
             f.write(img_data)
+        util.compress_image(file_path, file_path, 80)
 
     def __screenshot(self, edge, row):
         edge.get(row.link)
@@ -154,8 +155,8 @@ class LrbScreenshot(QThread):
 # noinspection PyUnresolvedReferences
 def main():
     ls = LrbScreenshot()
-    ls.excel_path = r''
-    ls.save_dir = r''
+    ls.excel_path = r'C:\Users\mages\Desktop\0305截图.xlsx'
+    ls.save_dir = r'C:\Users\mages\Desktop\screenshot'
     ls.output.connect(lambda m: print(m))
     ls.run()
 

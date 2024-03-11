@@ -54,8 +54,8 @@ class ExcelImage(Lrb):
         pass
 
     def __add_image(self):
-        column_width = 30
-        row_height = 195
+        column_width = 25
+        row_height = 180
         self.item.sheet.column_dimensions[self.item.cell.column_letter].width = column_width
         self.item.sheet.row_dimensions[self.item.cell.row].height = row_height
         column_pixels = points_to_pixels(column_width * self.CHARACTER_WIDTH) - 10
@@ -75,7 +75,7 @@ class ExcelImage(Lrb):
         img.width = resize_w
 
         x = 5
-        y = 20
+        y = 40
 
         img_size_excel = XDRPositiveSize2D(pixels_to_EMU(resize_w), pixels_to_EMU(resize_h))
         marker = AnchorMarker(col=self.item.cell.column - 1, colOff=pixels_to_EMU(x),
@@ -106,7 +106,7 @@ class ExcelImage(Lrb):
 
 def main():
     ei = ExcelImage()
-    ei._excel_path = r''
+    ei._excel_path = r'C:\Users\mages\Desktop\screenshot\【每周更新】LRB SEM post weekly performance -0301-0310-笔记分类版.xlsx'
     # noinspection PyUnresolvedReferences
     ei.msg.connect(lambda m: print(m))
     ei.run()
