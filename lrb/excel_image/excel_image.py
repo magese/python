@@ -106,7 +106,7 @@ class ExcelImage(Lrb):
 
 def main():
     ei = ExcelImage()
-    ei._excel_path = r'C:\Users\mages\Desktop\screenshot\【每周更新】LRB SEM post weekly performance -0301-0310-笔记分类版.xlsx'
+    ei._excel_path = r'C:\Users\Magese\Desktop\screenshot2\冲锋衣小红书周报-1028-1104.xlsx'
     # noinspection PyUnresolvedReferences
     ei.msg.connect(lambda m: print(m))
     ei.run()

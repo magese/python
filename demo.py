@@ -32,7 +32,7 @@ def main():
                 crop_image.save(new_path)
                 print('cut image success, output path:', new_path)
                 # 压缩图片
-                compress_image(new_path, new_path, 90)
+                compress_image(new_path, new_path, 80)
 
 
 if __name__ == '__main__':
